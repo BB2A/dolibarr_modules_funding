@@ -1027,7 +1027,7 @@ class FundingApi extends DolibarrApi
 	/* END MODULEBUILDER API FUNDING */
 
 	/**
-	 * Upload a document for a funding
+	 * Upload a document for a funding - based on sendDocumentFunding method
 	 *
 	 * @param int   $id             ID of funding
 	 * @param string $docfield      Document field name (fundoc1-6 or funfoldoc1-6)
@@ -1047,6 +1047,8 @@ class FundingApi extends DolibarrApi
 	 */
 	public function postFundingDocument($id, $docfield, $request_data = null)
 	{
+		global $conf, $langs, $user, $db;
+
 		if (!DolibarrApiAccess::$user->hasRight('funding', 'write')) {
 			throw new RestException(403);
 		}
@@ -1070,7 +1072,332 @@ class FundingApi extends DolibarrApi
 			throw new RestException(400, 'File data and filename are required');
 		}
 
+		require_once DOL_DOCUMENT_ROOT.'/core/lib/files.lib.php';
+
+		// Define upload directory
+		$module = 'funding';
+		$class = 'funding';
+		$upload_dir = $conf->$module->multidir_output[$conf->entity].'/'.$class.'/'.dol_sanitizeFileName($this->funding->ref);
+
+		// Create directory if it doesn't exist
+		if (!file_exists($upload_dir)) {
+			if (dol_mkdir($upload_dir) < 0) {
+				throw new RestException(500, 'Failed to create upload directory');
+			}
+		}
+
+		// Get file data and filename from request
+		$filedata = base64_decode($request_data['file']);
+		$uploaded_filename = dol_sanitizeFileName($request_data['filename']);
+		
+		// Save the uploaded file temporarily
+		$temp_filepath = $upload_dir.'/'.$uploaded_filename;
+		$byteswritten = file_put_contents($temp_filepath, $filedata);
+		if ($byteswritten === false) {
+			throw new RestException(500, 'Failed to write file to server');
+		}
+
+		// Determine the output filename based on the docfield (similar to sendDocumentFunding logic)
+		$fileoutputname = dol_string_nospecial(dol_sanitizeFileName(dol_string_nohtmltag($this->funding->ref.'_'.$langs->trans($docfield))));
+		$fileoutputname = str_replace(array('\'' , '&nbsp;', ' '), '_', $fileoutputname.'.pdf');
+		$final_filepath = $upload_dir.'/'.$fileoutputname;
+
+		// Check file type and convert to PDF if needed (similar to sendDocumentFunding)
+		$finfo = finfo_open(FILEINFO_MIME_TYPE);
+		$mtype = finfo_file($finfo, $temp_filepath);
+		finfo_close($finfo);
+
+		// If it's a PDF, just rename it
+		if (strpos($mtype, '/pdf') !== false) {
+			$result = dol_move($temp_filepath, $final_filepath);
+			if ($result == false) {
+				dol_delete_file($temp_filepath);
+				throw new RestException(500, 'Failed to rename PDF file');
+			}
+		} 
+		// If it's an image, convert to PDF
+		elseif (strpos($mtype, 'image/') === 0) {
+			require_once DOL_DOCUMENT_ROOT . '/core/lib/pdf.lib.php';
+			
+			$formatarray = pdf_getFormat();
+			$page_largeur = $formatarray['width'];
+			$page_hauteur = $formatarray['height'];
+			$format = array($page_largeur, $page_hauteur);
+			$marge_gauche = isset($conf->global->MAIN_PDF_MARGIN_LEFT) ? $conf->global->MAIN_PDF_MARGIN_LEFT : 10;
+			$marge_droite = isset($conf->global->MAIN_PDF_MARGIN_RIGHT) ? $conf->global->MAIN_PDF_MARGIN_RIGHT : 10;
+			$marge_haute = isset($conf->global->MAIN_PDF_MARGIN_TOP) ? $conf->global->MAIN_PDF_MARGIN_TOP : 10;
+			$marge_basse = isset($conf->global->MAIN_PDF_MARGIN_BOTTOM) ? $conf->global->MAIN_PDF_MARGIN_BOTTOM : 10;
+
+			$pdf = pdf_getInstance($format);
+			$pdf->SetMargins($marge_gauche, $marge_haute, $marge_droite);
+			$pdf->SetTitle($fileoutputname);
+			$pdf->SetAuthor(!empty($conf->global->MAIN_INFO_SOCIETE_NOM)?$conf->global->MAIN_INFO_SOCIETE_NOM:'');
+			$pdf->SetCreator($user->getfullname($langs));
+			if (class_exists('TCPDF')) {
+				$pdf->setPrintHeader(false);
+				$pdf->setPrintFooter(false);
+			}
+
+			$pdf->AddPage();
+			$pdf->Image($temp_filepath, '', '', $page_largeur - $marge_gauche - $marge_droite);
+
+			$pdf->Output($final_filepath, 'F');
+			$pdf->Close();
+
+			dol_delete_file($temp_filepath);
+		} else {
+			$result = dol_move($temp_filepath, $final_filepath);
+			if ($result == false) {
+				dol_delete_file($temp_filepath);
+				throw new RestException(500, 'Failed to process file');
+			}
+		}
+
+		// Verify file was created
+		if (!file_exists($final_filepath)) {
+			throw new RestException(500, 'File was not created on server');
+		}
+
+		// Update the database to store the filename in the specified document field
+		$checkfield = $docfield.'check';
+		
+		if (isset($this->funding->$checkfield)) {
+			$sql = "UPDATE ".MAIN_DB_PREFIX.$this->funding->table_element." SET ".$docfield." = '".addslashes($fileoutputname)."', ".$checkfield." = NULL WHERE rowid = ".((int) $id);
+		} else {
+			$sql = "UPDATE ".MAIN_DB_PREFIX.$this->funding->table_element." SET ".$docfield." = '".addslashes($fileoutputname)."' WHERE rowid = ".((int) $id);
+		}
+		
+		$resql = $db->query($sql);
+		if (!$resql) {
+			dol_delete_file($final_filepath);
+			throw new RestException(500, 'Failed to update document field in database: '.$db->lasterror());
+		}
+
+		// Update status if needed
+		$this->funding->fetch($id);
+		if (empty($this->funding->fundoc1check) && empty($this->funding->fundoc2check) && 
+		    empty($this->funding->fundoc3check) && empty($this->funding->fundoc4check) && 
+		    empty($this->funding->fundoc5check) && $this->funding->status_folder == $this->funding::STATUS_FOLDER_LACK) {
+			$this->funding->setStatusFolder($user, $this->funding::STATUS_FOLDER_LACKOK);
+		}
+
+		$fileinfo = array(
+			'name' => $fileoutputname,
+			'path' => $final_filepath,
+			'size' => filesize($final_filepath),
+			'mime_type' => mime_content_type($final_filepath),
+			'field' => $docfield
+		);
+
+		return array(
+			'success' => array(
+				'code' => 200,
+				'message' => 'File uploaded successfully to field '.$docfield,
+				'file' => $fileinfo
+			)
+		);
+	}
+
+	/**
+	 * Get document for a specific funding field
+	 *
+	 * @param int $id ID of funding
+	 * @param string $docfield Document field name (fundoc1-6 or funfoldoc1-6)
+	 * @return array Array of document information
+	 * @phan-return array<string,mixed>
+	 * @phpstan-return array<string,mixed>
+	 *
+	 * @throws RestException 403 Not allowed
+	 * @throws RestException 404 Not found
+	 * @throws RestException 400 Bad request
+	 * @throws RestException 503 System error
+	 *
+	 * @url GET fundings/{id}/documents/{docfield}
+	 */
+	public function getFundingDocument($id, $docfield)
+	{
+		if (!DolibarrApiAccess::$user->hasRight('funding', 'read')) {
+			throw new RestException(403);
+		}
+		if (!DolibarrApi::_checkAccessToResource('funding', $id, 'funding_funding')) {
+			throw new RestException(403, 'Access to instance id='.$id.' of object not allowed for login '.DolibarrApiAccess::$user->login);
+		}
+
+		$result = $this->funding->fetch($id);
+		if (!$result) {
+			throw new RestException(404, 'Funding not found');
+		}
+
+		// Validate docfield parameter
+		$allowed_docfields = array('fundoc1', 'fundoc2', 'fundoc3', 'fundoc4', 'fundoc5', 'fundoc6', 'funfoldoc1', 'funfoldoc2', 'funfoldoc3', 'funfoldoc4', 'funfoldoc5', 'funfoldoc6');
+		if (!in_array($docfield, $allowed_docfields)) {
+			throw new RestException(400, 'Invalid document field. Allowed fields are: '.implode(', ', $allowed_docfields));
+		}
+
+		global $conf;
+		require_once DOL_DOCUMENT_ROOT.'/core/lib/files.lib.php';
+
+		$module = 'funding';
+		$class = 'funding';
+		$upload_dir = $conf->$module->multidir_output[$conf->entity].'/'.$class.'/'.dol_sanitizeFileName($this->funding->ref);
+
+		// Get the filename from the database field
+		$filename = $this->funding->$docfield;
+		
+		if (empty($filename)) {
+			return array(
+				'field' => $docfield,
+				'filename' => null,
+				'message' => 'No document associated with field '.$docfield
+			);
+		}
+
+		$filepath = $upload_dir.'/'.$filename;
+		
+		if (!file_exists($filepath)) {
+			return array(
+				'field' => $docfield,
+				'filename' => $filename,
+				'message' => 'File referenced but not found on filesystem',
+				'exists' => false
+			);
+		}
+
+		$checkfield = $docfield.'check';
+		
+		return array(
+			'field' => $docfield,
+			'filename' => $filename,
+			'path' => $filepath,
+			'size' => filesize($filepath),
+			'mime_type' => mime_content_type($filepath),
+			'check' => isset($this->funding->$checkfield) ? $this->funding->$checkfield : null,
+			'exists' => true
+		);
+	}
+
+	/**
+	 * Delete a document for a specific funding field
+	 *
+	 * @param int    $id          ID of funding
+	 * @param string $docfield    Document field name (fundoc1-6 or funfoldoc1-6)
+	 * @return array
+	 * @phan-return array<string,array{code:int,message:string}>
+	 * @phpstan-return array<string,array{code:int,message:string}>
+	 *
+	 * @throws RestException 403 Not allowed
+	 * @throws RestException 404 Not found
+	 * @throws RestException 400 Bad request
+	 * @throws RestException 500 System error
+	 *
+	 * @url DELETE fundings/{id}/documents/{docfield}
+	 */
+	public function deleteFundingDocument($id, $docfield)
+	{
 		global $conf, $db;
+
+		if (!DolibarrApiAccess::$user->hasRight('funding', 'delete')) {
+			throw new RestException(403);
+		}
+		if (!DolibarrApi::_checkAccessToResource('funding', $id, 'funding_funding')) {
+			throw new RestException(403, 'Access to instance id='.$id.' of object not allowed for login '.DolibarrApiAccess::$user->login);
+		}
+
+		$result = $this->funding->fetch($id);
+		if (!$result) {
+			throw new RestException(404, 'Funding not found');
+		}
+
+		// Validate docfield parameter
+		$allowed_docfields = array('fundoc1', 'fundoc2', 'fundoc3', 'fundoc4', 'fundoc5', 'fundoc6', 'funfoldoc1', 'funfoldoc2', 'funfoldoc3', 'funfoldoc4', 'funfoldoc5', 'funfoldoc6');
+		if (!in_array($docfield, $allowed_docfields)) {
+			throw new RestException(400, 'Invalid document field. Allowed fields are: '.implode(', ', $allowed_docfields));
+		}
+
+		require_once DOL_DOCUMENT_ROOT.'/core/lib/files.lib.php';
+
+		$module = 'funding';
+		$class = 'funding';
+		$upload_dir = $conf->$module->multidir_output[$conf->entity].'/'.$class.'/'.dol_sanitizeFileName($this->funding->ref);
+		
+		// Get the filename from the database field
+		$filename = $this->funding->$docfield;
+		
+		if (empty($filename)) {
+			throw new RestException(404, 'No file associated with field '.$docfield);
+		}
+
+		$filepath = $upload_dir.'/'.$filename;
+
+		if (!file_exists($filepath)) {
+			throw new RestException(404, 'File not found: '.$filename);
+		}
+
+		// Delete the file from filesystem
+		if (dol_delete_file($filepath) < 0) {
+			throw new RestException(500, 'Failed to delete file from filesystem');
+		}
+
+		// Clear the document field in database
+		$checkfield = $docfield.'check';
+		
+		if (isset($this->funding->$checkfield)) {
+			$sql = "UPDATE ".MAIN_DB_PREFIX.$this->funding->table_element." SET ".$docfield." = '', ".$checkfield." = NULL WHERE rowid = ".((int) $id);
+		} else {
+			$sql = "UPDATE ".MAIN_DB_PREFIX.$this->funding->table_element." SET ".$docfield." = '' WHERE rowid = ".((int) $id);
+		}
+		
+		$resql = $db->query($sql);
+		if (!$resql) {
+			throw new RestException(500, 'Failed to clear document field in database: '.$db->lasterror());
+		}
+
+		return array(
+			'success' => array(
+				'code' => 200,
+				'message' => 'Document field '.$docfield.' cleared successfully'
+			)
+		);
+	}
+
+
+	/**
+	 * Upload a document for a funding
+	 *
+	 * @param int   $id             ID of funding
+	 * @param array $request_data   Data with file content
+	 * @phan-param ?array<string,mixed> $request_data
+	 * @phpstan-param ?array<string,mixed> $request_data
+	 * @return array
+	 * @phan-return array<string,mixed>
+	 * @phpstan-return array<string,mixed>
+	 *
+	 * @throws RestException 403 Not allowed
+	 * @throws RestException 404 Not found
+	 * @throws RestException 500 System error
+	 *
+	 * @url POST fundings/{id}/documents
+	 */
+	public function postFundingDocument($id, $request_data = null)
+	{
+		if (!DolibarrApiAccess::$user->hasRight('funding', 'write')) {
+			throw new RestException(403);
+		}
+		if (!DolibarrApi::_checkAccessToResource('funding', $id, 'funding_funding')) {
+			throw new RestException(403, 'Access to instance id='.$id.' of object not allowed for login '.DolibarrApiAccess::$user->login);
+		}
+
+		$result = $this->funding->fetch($id);
+		if (!$result) {
+			throw new RestException(404, 'Funding not found');
+		}
+
+		// Check if file data is provided
+		if (empty($request_data['file']) || empty($request_data['filename'])) {
+			throw new RestException(400, 'File data and filename are required');
+		}
+
+		global $conf;
 		require_once DOL_DOCUMENT_ROOT.'/core/lib/files.lib.php';
 
 		// Define upload directory
@@ -1101,37 +1428,19 @@ class FundingApi extends DolibarrApi
 			throw new RestException(500, 'File was not created on server');
 		}
 
-		// Update the database to store the filename in the specified document field
-		$sql = "UPDATE ".MAIN_DB_PREFIX.$this->funding->table_element." SET ".$docfield." = '".addslashes($filename)."' WHERE rowid = ".((int) $id);
-		$resql = $db->query($sql);
-		if (!$resql) {
-			// Rollback: delete the uploaded file
-			dol_delete_file($filepath);
-			throw new RestException(500, 'Failed to update document field in database: '.$db->lasterror());
-		}
-
-		// Also clear the check field if it exists (fundocXcheck or funfoldocXcheck)
-		$checkfield = $docfield.'check';
-		if (isset($this->funding->$checkfield)) {
-			$sql = "UPDATE ".MAIN_DB_PREFIX.$this->funding->table_element." SET ".$checkfield." = NULL WHERE rowid = ".((int) $id);
-			$db->query($sql);
-		}
-
-		// Refresh the funding object to get updated data
-		$this->funding->fetch($id);
-
+		// Add file to database if there's a specific field for it
+		// For now, we just return success with file information
 		$fileinfo = array(
 			'name' => $filename,
 			'path' => $filepath,
 			'size' => filesize($filepath),
-			'mime_type' => mime_content_type($filepath),
-			'field' => $docfield
+			'mime_type' => mime_content_type($filepath)
 		);
 
 		return array(
 			'success' => array(
 				'code' => 200,
-				'message' => 'File uploaded successfully to field '.$docfield,
+				'message' => 'File uploaded successfully',
 				'file' => $fileinfo
 			)
 		);
@@ -1141,9 +1450,9 @@ class FundingApi extends DolibarrApi
 	 * List documents for a funding
 	 *
 	 * @param int $id ID of funding
-	 * @return array Array of document information with field mappings
-	 * @phan-return array<string,array<string,mixed>>
-	 * @phpstan-return array<string,array<string,mixed>>
+	 * @return array Array of document information
+	 * @phan-return array<int,array<string,mixed>>
+	 * @phpstan-return array<int,array<string,mixed>>
 	 *
 	 * @throws RestException 403 Not allowed
 	 * @throws RestException 404 Not found
@@ -1172,16 +1481,11 @@ class FundingApi extends DolibarrApi
 		$class = 'funding';
 		$upload_dir = $conf->$module->multidir_output[$conf->entity].'/'.$class.'/'.dol_sanitizeFileName($this->funding->ref);
 
-		// Define allowed document fields
-		$allowed_docfields = array('fundoc1', 'fundoc2', 'fundoc3', 'fundoc4', 'fundoc5', 'fundoc6', 'funfoldoc1', 'funfoldoc2', 'funfoldoc3', 'funfoldoc4', 'funfoldoc5', 'funfoldoc6');
-
 		$files = array();
-		
-		// Get documents from filesystem
 		if (file_exists($upload_dir)) {
 			$filearray = dol_dir_list($upload_dir, 'files');
 			foreach ($filearray as $file) {
-				$files[$file['name']] = array(
+				$files[] = array(
 					'name' => $file['name'],
 					'size' => $file['size'],
 					'date' => $file['date'],
@@ -1190,45 +1494,25 @@ class FundingApi extends DolibarrApi
 			}
 		}
 
-		// Get documents from database fields and map them
-		$documents = array();
-		foreach ($allowed_docfields as $docfield) {
-			if (!empty($this->funding->$docfield)) {
-				$filename = $this->funding->$docfield;
-				$checkfield = $docfield.'check';
-				$documents[$docfield] = array(
-					'field' => $docfield,
-					'filename' => $filename,
-					'check' => isset($this->funding->$checkfield) ? $this->funding->$checkfield : null,
-					'exists' => file_exists($upload_dir.'/'.$filename),
-					'size' => file_exists($upload_dir.'/'.$filename) ? filesize($upload_dir.'/'.$filename) : 0
-				);
-			}
-		}
-
-		return array(
-			'files' => $files,
-			'documents' => $documents
-		);
+		return $files;
 	}
 
 	/**
 	 * Delete a document for a funding
 	 *
 	 * @param int    $id          ID of funding
-	 * @param string $docfield    Document field name (fundoc1-6 or funfoldoc1-6)
+	 * @param string $filename    Name of file to delete
 	 * @return array
 	 * @phan-return array<string,array{code:int,message:string}>
 	 * @phpstan-return array<string,array{code:int,message:string}>
 	 *
 	 * @throws RestException 403 Not allowed
 	 * @throws RestException 404 Not found
-	 * @throws RestException 400 Bad request
 	 * @throws RestException 500 System error
 	 *
-	 * @url DELETE fundings/{id}/documents/{docfield}
+	 * @url DELETE fundings/{id}/documents/{filename}
 	 */
-	public function deleteFundingDocument($id, $docfield)
+	public function deleteFundingDocument($id, $filename)
 	{
 		if (!DolibarrApiAccess::$user->hasRight('funding', 'delete')) {
 			throw new RestException(403);
@@ -1242,55 +1526,26 @@ class FundingApi extends DolibarrApi
 			throw new RestException(404, 'Funding not found');
 		}
 
-		// Validate docfield parameter
-		$allowed_docfields = array('fundoc1', 'fundoc2', 'fundoc3', 'fundoc4', 'fundoc5', 'fundoc6', 'funfoldoc1', 'funfoldoc2', 'funfoldoc3', 'funfoldoc4', 'funfoldoc5', 'funfoldoc6');
-		if (!in_array($docfield, $allowed_docfields)) {
-			throw new RestException(400, 'Invalid document field. Allowed fields are: '.implode(', ', $allowed_docfields));
-		}
-
-		global $conf, $db;
+		global $conf;
 		require_once DOL_DOCUMENT_ROOT.'/core/lib/files.lib.php';
 
 		$module = 'funding';
 		$class = 'funding';
 		$upload_dir = $conf->$module->multidir_output[$conf->entity].'/'.$class.'/'.dol_sanitizeFileName($this->funding->ref);
-		
-		// Get the filename from the database field
-		$filename = $this->funding->$docfield;
-		
-		if (empty($filename)) {
-			throw new RestException(404, 'No file associated with field '.$docfield);
-		}
-
 		$filepath = $upload_dir.'/'.$filename;
 
 		if (!file_exists($filepath)) {
-			throw new RestException(404, 'File not found: '.$filename);
+			throw new RestException(404, 'File not found');
 		}
 
-		// Delete the file from filesystem
 		if (dol_delete_file($filepath) < 0) {
-			throw new RestException(500, 'Failed to delete file from filesystem');
-		}
-
-		// Clear the document field in database
-		$sql = "UPDATE ".MAIN_DB_PREFIX.$this->funding->table_element." SET ".$docfield." = '' WHERE rowid = ".((int) $id);
-		$resql = $db->query($sql);
-		if (!$resql) {
-			throw new RestException(500, 'Failed to clear document field in database: '.$db->lasterror());
-		}
-
-		// Also clear the check field if it exists
-		$checkfield = $docfield.'check';
-		if (isset($this->funding->$checkfield)) {
-			$sql = "UPDATE ".MAIN_DB_PREFIX.$this->funding->table_element." SET ".$checkfield." = NULL WHERE rowid = ".((int) $id);
-			$db->query($sql);
+			throw new RestException(500, 'Failed to delete file');
 		}
 
 		return array(
 			'success' => array(
 				'code' => 200,
-				'message' => 'Document field '.$docfield.' cleared successfully'
+				'message' => 'File deleted successfully'
 			)
 		);
 	}
