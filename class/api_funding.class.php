@@ -1026,6 +1026,195 @@ class FundingApi extends DolibarrApi
 
 	/* END MODULEBUILDER API FUNDING */
 
+	/**
+	 * Upload a document for a funding
+	 *
+	 * @param int   $id             ID of funding
+	 * @param array $request_data   Data with file content
+	 * @phan-param ?array<string,mixed> $request_data
+	 * @phpstan-param ?array<string,mixed> $request_data
+	 * @return array
+	 * @phan-return array<string,mixed>
+	 * @phpstan-return array<string,mixed>
+	 *
+	 * @throws RestException 403 Not allowed
+	 * @throws RestException 404 Not found
+	 * @throws RestException 500 System error
+	 *
+	 * @url POST fundings/{id}/documents
+	 */
+	public function postFundingDocument($id, $request_data = null)
+	{
+		if (!DolibarrApiAccess::$user->hasRight('funding', 'write')) {
+			throw new RestException(403);
+		}
+		if (!DolibarrApi::_checkAccessToResource('funding', $id, 'funding_funding')) {
+			throw new RestException(403, 'Access to instance id='.$id.' of object not allowed for login '.DolibarrApiAccess::$user->login);
+		}
+
+		$result = $this->funding->fetch($id);
+		if (!$result) {
+			throw new RestException(404, 'Funding not found');
+		}
+
+		// Check if file data is provided
+		if (empty($request_data['file']) || empty($request_data['filename'])) {
+			throw new RestException(400, 'File data and filename are required');
+		}
+
+		global $conf;
+		require_once DOL_DOCUMENT_ROOT.'/core/lib/files.lib.php';
+
+		// Define upload directory
+		$module = 'funding';
+		$class = 'funding';
+		$upload_dir = $conf->$module->multidir_output[$conf->entity].'/'.$class.'/'.dol_sanitizeFileName($this->funding->ref);
+
+		// Create directory if it doesn't exist
+		if (!file_exists($upload_dir)) {
+			if (dol_mkdir($upload_dir) < 0) {
+				throw new RestException(500, 'Failed to create upload directory: '.$upload_dir);
+			}
+		}
+
+		// Get file data and filename
+		$filedata = base64_decode($request_data['file']);
+		$filename = dol_sanitizeFileName($request_data['filename']);
+		$filepath = $upload_dir.'/'.$filename;
+
+		// Save the file
+		$byteswritten = file_put_contents($filepath, $filedata);
+		if ($byteswritten === false) {
+			throw new RestException(500, 'Failed to write file to server');
+		}
+
+		// Verify file was written correctly
+		if (!file_exists($filepath)) {
+			throw new RestException(500, 'File was not created on server');
+		}
+
+		// Add file to database if there's a specific field for it
+		// For now, we just return success with file information
+		$fileinfo = array(
+			'name' => $filename,
+			'path' => $filepath,
+			'size' => filesize($filepath),
+			'mime_type' => mime_content_type($filepath)
+		);
+
+		return array(
+			'success' => array(
+				'code' => 200,
+				'message' => 'File uploaded successfully',
+				'file' => $fileinfo
+			)
+		);
+	}
+
+	/**
+	 * List documents for a funding
+	 *
+	 * @param int $id ID of funding
+	 * @return array Array of document information
+	 * @phan-return array<int,array<string,mixed>>
+	 * @phpstan-return array<int,array<string,mixed>>
+	 *
+	 * @throws RestException 403 Not allowed
+	 * @throws RestException 404 Not found
+	 * @throws RestException 503 System error
+	 *
+	 * @url GET fundings/{id}/documents
+	 */
+	public function getFundingDocuments($id)
+	{
+		if (!DolibarrApiAccess::$user->hasRight('funding', 'read')) {
+			throw new RestException(403);
+		}
+		if (!DolibarrApi::_checkAccessToResource('funding', $id, 'funding_funding')) {
+			throw new RestException(403, 'Access to instance id='.$id.' of object not allowed for login '.DolibarrApiAccess::$user->login);
+		}
+
+		$result = $this->funding->fetch($id);
+		if (!$result) {
+			throw new RestException(404, 'Funding not found');
+		}
+
+		global $conf;
+		require_once DOL_DOCUMENT_ROOT.'/core/lib/files.lib.php';
+
+		$module = 'funding';
+		$class = 'funding';
+		$upload_dir = $conf->$module->multidir_output[$conf->entity].'/'.$class.'/'.dol_sanitizeFileName($this->funding->ref);
+
+		$files = array();
+		if (file_exists($upload_dir)) {
+			$filearray = dol_dir_list($upload_dir, 'files');
+			foreach ($filearray as $file) {
+				$files[] = array(
+					'name' => $file['name'],
+					'size' => $file['size'],
+					'date' => $file['date'],
+					'fullname' => $file['fullname']
+				);
+			}
+		}
+
+		return $files;
+	}
+
+	/**
+	 * Delete a document for a funding
+	 *
+	 * @param int    $id          ID of funding
+	 * @param string $filename    Name of file to delete
+	 * @return array
+	 * @phan-return array<string,array{code:int,message:string}>
+	 * @phpstan-return array<string,array{code:int,message:string}>
+	 *
+	 * @throws RestException 403 Not allowed
+	 * @throws RestException 404 Not found
+	 * @throws RestException 500 System error
+	 *
+	 * @url DELETE fundings/{id}/documents/{filename}
+	 */
+	public function deleteFundingDocument($id, $filename)
+	{
+		if (!DolibarrApiAccess::$user->hasRight('funding', 'delete')) {
+			throw new RestException(403);
+		}
+		if (!DolibarrApi::_checkAccessToResource('funding', $id, 'funding_funding')) {
+			throw new RestException(403, 'Access to instance id='.$id.' of object not allowed for login '.DolibarrApiAccess::$user->login);
+		}
+
+		$result = $this->funding->fetch($id);
+		if (!$result) {
+			throw new RestException(404, 'Funding not found');
+		}
+
+		global $conf;
+		require_once DOL_DOCUMENT_ROOT.'/core/lib/files.lib.php';
+
+		$module = 'funding';
+		$class = 'funding';
+		$upload_dir = $conf->$module->multidir_output[$conf->entity].'/'.$class.'/'.dol_sanitizeFileName($this->funding->ref);
+		$filepath = $upload_dir.'/'.$filename;
+
+		if (!file_exists($filepath)) {
+			throw new RestException(404, 'File not found');
+		}
+
+		if (dol_delete_file($filepath) < 0) {
+			throw new RestException(500, 'Failed to delete file');
+		}
+
+		return array(
+			'success' => array(
+				'code' => 200,
+				'message' => 'File deleted successfully'
+			)
+		);
+	}
+
 
 	/* BEGIN MODULEBUILDER API RETENTION */
 	/**
