@@ -1114,8 +1114,7 @@ class FundingApi extends DolibarrApi
 				dol_delete_file($temp_filepath);
 				throw new RestException(500, 'Failed to rename PDF file');
 			}
-		} // If it's an image, convert to PDF
-		elseif (strpos($mtype, 'image/') === 0) {
+		} elseif (strpos($mtype, 'image/') === 0) { // If it's an image, convert to PDF
 			require_once DOL_DOCUMENT_ROOT . '/core/lib/pdf.lib.php';
 
 			$formatarray = pdf_getFormat();
