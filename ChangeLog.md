@@ -4,7 +4,8 @@
 - PHP min 8
 - Dolibarr min 18
 
-- NEW - 07/09/2026 - Ajout de nouvelles méthodes pour récupérer les listes de statuts, échelles, durées et types de financement ainssi que les organisations
+- NEW - 10/09/2026 - API Ajout de nouvelles méthodes pour les documents
+- NEW - 07/09/2026 - API Ajout de nouvelles méthodes pour récupérer les listes de statuts, échelles, durées et types de financement ainssi que les organisations
 
 - FIX - 07/09/2026 - Mise à jour du type de champ 'date_end' et ajout de paramètres à la méthode 'createFromClone'
 
