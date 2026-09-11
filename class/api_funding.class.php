@@ -1226,7 +1226,7 @@ class FundingApi extends DolibarrApi
 			throw new RestException(404, 'Funding not found');
 		}
 
-		global $conf;
+		global $conf, $langs;
 		require_once DOL_DOCUMENT_ROOT.'/core/lib/files.lib.php';
 
 		$module = 'funding';
@@ -1237,6 +1237,7 @@ class FundingApi extends DolibarrApi
 
 		// If docfield is empty, return all documents
 		if (empty($docfield)) {
+			$langs->load('funding@funding');
 			$documents = array();
 			foreach ($allowed_docfields as $field) {
 				$filename = $this->funding->$field;
@@ -1246,6 +1247,7 @@ class FundingApi extends DolibarrApi
 					$exists = file_exists($filepath);
 					$documents[$field] = array(
 						'field' => $field,
+						'name' => $langs->trans($field),
 						'filename' => $filename,
 						'path' => $filepath,
 						'size' => $exists ? filesize($filepath) : 0,
