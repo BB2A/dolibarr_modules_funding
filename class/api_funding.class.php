@@ -1212,7 +1212,7 @@ class FundingApi extends DolibarrApi
 	 *
 	 * @url GET fundings/{id}/documents/{docfield}
 	 */
-	public function getFundingDocument($id, $docfield)
+	public function getFundingDocument($id, $docfield = '')
 	{
 		if (!DolibarrApiAccess::$user->hasRight('funding', 'read')) {
 			throw new RestException(403);
@@ -1226,18 +1226,45 @@ class FundingApi extends DolibarrApi
 			throw new RestException(404, 'Funding not found');
 		}
 
-		// Validate docfield parameter
-		$allowed_docfields = array('fundoc1', 'fundoc2', 'fundoc3', 'fundoc4', 'fundoc5', 'fundoc6', 'funfoldoc1', 'funfoldoc2', 'funfoldoc3', 'funfoldoc4', 'funfoldoc5', 'funfoldoc6');
-		if (!in_array($docfield, $allowed_docfields)) {
-			throw new RestException(400, 'Invalid document field. Allowed fields are: '.implode(', ', $allowed_docfields));
-		}
-
 		global $conf;
 		require_once DOL_DOCUMENT_ROOT.'/core/lib/files.lib.php';
 
 		$module = 'funding';
 		$class = 'funding';
 		$upload_dir = $conf->$module->multidir_output[$conf->entity].'/'.$class.'/'.dol_sanitizeFileName($this->funding->ref);
+
+		$allowed_docfields = array('fundoc1', 'fundoc2', 'fundoc3', 'fundoc4', 'fundoc5', 'fundoc6', 'funfoldoc1', 'funfoldoc2', 'funfoldoc3', 'funfoldoc4', 'funfoldoc5', 'funfoldoc6');
+
+		// If docfield is empty, return all documents
+		if (empty($docfield)) {
+			$documents = array();
+			foreach ($allowed_docfields as $field) {
+				$filename = $this->funding->$field;
+				if (!empty($filename)) {
+					$filepath = $upload_dir.'/'.$filename;
+					$checkfield = $field.'check';
+					$exists = file_exists($filepath);
+					$documents[$field] = array(
+						'field' => $field,
+						'filename' => $filename,
+						'path' => $filepath,
+						'size' => $exists ? filesize($filepath) : 0,
+						'mime_type' => $exists ? mime_content_type($filepath) : null,
+						'check' => isset($this->funding->$checkfield) ? $this->funding->$checkfield : null,
+						'exists' => $exists
+					);
+				}
+			}
+			return array(
+				'all_documents' => true,
+				'documents' => $documents
+			);
+		}
+
+		// Validate docfield parameter for single document
+		if (!in_array($docfield, $allowed_docfields)) {
+			throw new RestException(400, 'Invalid document field. Allowed fields are: '.implode(', ', $allowed_docfields));
+		}
 
 		// Get the filename from the database field
 		$filename = $this->funding->$docfield;
