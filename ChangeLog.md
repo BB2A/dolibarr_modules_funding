@@ -1,12 +1,26 @@
 # CHANGELOG FUNDING FOR [DOLIBARR ERP CRM](https://www.dolibarr.org)
 
-## [Dev] - 00/2026 Dolibarr 23
+## [DEV] - 00/2026 Dolibarr 24
 - PHP min 8
 - Dolibarr min 18
 
+
+
+## [1.1.6] - 09/2026 Dolibarr 24
+- PHP min 8
+- Dolibarr min 18
+
+- NEW - 11/09/2026 - Ajout de la gestion des variables de configuration FUNDING_ID_REGLEMENT et FUNDING_VALIDITY_MONTH dans le constructeur de FundingApi
+- NEW - 11/09/2026 - Ajout de la prise en charge de la traduction des noms de champs dans la méthode de récupération des documents de financement
+- NEW - 11/09/2026 - Ajout de la possibilité de récupérer tous les documents de financement si aucun champ de document n'est spécifié dans la méthode getFundingDocument
 - NEW - 10/09/2026 - API Ajout de nouvelles méthodes pour les documents
+- NEW - 09/09/2026 - Add document upload API endpoints for Funding
+- NEW - 09/09/2026 - Update document upload API to use specific doc fields
+- NEW - 09/09/2026 - Refactor document upload API to use sendDocumentFunding logic
 - NEW - 07/09/2026 - API Ajout de nouvelles méthodes pour récupérer les listes de statuts, échelles, durées et types de financement ainssi que les organisations
 
+- FIX - 11/09/2026 - Remplacer la vérification de l'activation du module de financement par la fonction isModEnabled
+- FIX - 10/09/2026 - Supprimer les méthodes d'upload, de récupération et de suppression de documents pour le financement
 - FIX - 07/09/2026 - Mise à jour du type de champ 'date_end' et ajout de paramètres à la méthode 'createFromClone'
 
 ## [1.1.6] - 00/2026 Dolibarr 23
