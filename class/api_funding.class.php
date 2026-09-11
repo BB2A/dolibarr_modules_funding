@@ -55,6 +55,7 @@ class FundingApi extends DolibarrApi
 	 * @var mixed TODO: set type
 	 */
 	public $retention;
+	public $funding_id_reglement;
 
 	/**
 	 * Constructor
@@ -63,11 +64,14 @@ class FundingApi extends DolibarrApi
 	 */
 	public function __construct()
 	{
-		global $db;
+		global $db, $conf;
 		$this->db = $db;
 		$this->coefficient = new Coefficient($this->db);
 		$this->funding = new Funding($this->db);
 		$this->retention = new Retention($this->db);
+
+		$this->funding_id_reglement = !empty($conf->global->FUNDING_ID_REGLEMENT) ? $conf->global->FUNDING_ID_REGLEMENT : null;
+		$this->funding_validity_month = !empty($conf->global->FUNDING_VALIDITY_MONTH) ? $conf->global->FUNDING_VALIDITY_MONTH : null;
 	}
 
 
