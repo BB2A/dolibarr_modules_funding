@@ -4,6 +4,8 @@
 - PHP min 8
 - Dolibarr min 18
 
+- NEW - 12/09/2026 - API Ajout d'une méthode de validation du financement (POST fundings/{id}/validate) conforme à la fiche web
+
 
 
 ## [1.1.6] - 09/2026 Dolibarr 24
