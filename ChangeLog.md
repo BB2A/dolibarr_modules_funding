@@ -3,8 +3,9 @@
 ## [DEV] - 00/2026 Dolibarr 24
 - PHP min 8
 - Dolibarr min 18
-- NEW - API Ajout de la possibilité de marquer un document de financement comme demandé (POST/DELETE fundings/{id}/documents/{docfield}/request), sur le même principe que la case "filecheck" de funding_card.php, seulement lorsque le document correspondant n'est pas fourni
 
+- NEW - 00/00/2026 - API Ajout de la possibilité de marquer un document de financement comme demandé (POST/DELETE fundings/{id}/documents/{docfield}/request), sur le même principe que la case "filecheck" de funding_card.php, seulement lorsque le document correspondant n'est pas fourni
+- FIX - 00/00/2026 - API Utilisation de property_exists() au lieu de isset() pour la détection du champ de demande de document (fundoc{N}check) car isset() retourne false pour une propriété déclarée à null
 
 ## [1.1.6] - 09/2026 Dolibarr 24
 - PHP min 8
