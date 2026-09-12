@@ -4,6 +4,7 @@
 - PHP min 8
 - Dolibarr min 18
 
+- NEW - 12/09/2026 - API Ajout de la méthode setFundingAcceptedDenied reproduisant le comportement de l'action setAcceptedRefused de funding_card.php
 - NEW - 12/09/2026 - API Ajout de la possibilité de marquer un document de financement comme demandé (POST/DELETE fundings/{id}/documents/{docfield}/request), sur le même principe que la case "filecheck" de funding_card.php, seulement lorsque le document correspondant n'est pas fourni
 - NEW - 12/09/2026 - API Ajout d'une méthode de validation du financement (POST fundings/{id}/validate) conforme à la fiche web
 

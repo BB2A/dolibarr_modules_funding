@@ -1220,6 +1220,73 @@ class FundingApi extends DolibarrApi
 	/* END MODULEBUILDER API FUNDING */
 
 	/**
+	 * Set funding accepted or denied status
+	 *
+	 * Apply the same behaviour as the setAcceptedRefused action in funding_card.php:
+	 * the funding must be validated (status >= STATUS_VALIDATED) and the target
+	 * status must be greater than 0.
+	 *
+	 * @param   int     $id             Funding ID
+	 * @param   array   $request_data   Request data
+	 * @phan-param ?array<string,mixed> $request_data
+	 * @phpstan-param ?array<string,mixed> $request_data
+	 * @return  Object                  Object with cleaned properties
+	 * @phan-return  Funding            Object with cleaned properties
+	 * @phpstan-return  Funding          Object with cleaned properties
+	 *
+	 * @throws RestException 403 Not allowed
+	 * @throws RestException 404 Not found
+	 * @throws RestException 400 Bad request
+	 * @throws RestException 500 System error
+	 *
+	 * @url POST fundings/{id}/setaccepteddenied
+	 */
+	public function setFundingAcceptedDenied($id, $request_data = null)
+	{
+		global $db;
+
+		if (!DolibarrApiAccess::$user->hasRight('funding', 'write')) {
+			throw new RestException(403);
+		}
+		if (!DolibarrApiAccess::$user->hasRight('funding', 'funding', 'write')) {
+			throw new RestException(403);
+		}
+		if (!DolibarrApi::_checkAccessToResource('funding', $id, 'funding_funding')) {
+			throw new RestException(403, 'Access to instance id='.$id.' of object not allowed for login '.DolibarrApiAccess::$user->login);
+		}
+
+		$result = $this->funding->fetch($id);
+		if (!$result) {
+			throw new RestException(404, 'Funding not found');
+		}
+
+		$statut = isset($request_data['statut']) ? (int) $request_data['statut'] : 0;
+		$study_number = isset($request_data['study_number']) ? $request_data['study_number'] : '';
+		$folder_number = isset($request_data['folder_number']) ? $request_data['folder_number'] : '';
+		$date_accepted = isset($request_data['date_accepted']) ? $request_data['date_accepted'] : '';
+		$retention = isset($request_data['retention']) ? $request_data['retention'] : 0;
+
+		if (!($statut > 0)) {
+			throw new RestException(400, 'Field statut is required and must be greater than 0');
+		}
+
+		// The funding must be validated before it can be accepted or denied
+		if ($this->funding->status < Funding::STATUS_VALIDATED) {
+			throw new RestException(400, 'Funding must be validated before it can be accepted or denied');
+		}
+
+		$db->begin();
+		$result = $this->funding->setAcceptedRefused(DolibarrApiAccess::$user, $statut, $study_number, $folder_number, $date_accepted, $retention);
+		if ($result <= 0) {
+			$db->rollback();
+			throw new RestException(500, $this->funding->error);
+		}
+		$db->commit();
+
+		return $this->getFunding($id);
+	}
+
+	/**
 	 * Upload a document for a funding - based on sendDocumentFunding method
 	 *
 	 * @param int   $id             ID of funding
