@@ -4,7 +4,7 @@
 - PHP min 8
 - Dolibarr min 18
 
-
+- NEW - 12/09/2026 - API Ajout de la méthode setFundingAcceptedDenied reproduisant le comportement de l'action setAcceptedRefused de funding_card.php
 
 ## [1.1.6] - 09/2026 Dolibarr 24
 - PHP min 8
