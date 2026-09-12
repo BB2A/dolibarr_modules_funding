@@ -651,6 +651,67 @@ class FundingApi extends DolibarrApi
 	}
 
 	/**
+	 * Put funding in extension (prolongation)
+	 *
+	 * Same conditions as the "extension" action in funding_card.php:
+	 * requires the funding:manage right, the funding must be running
+	 * (status == STATUS_RUNNING), not coming from a proposal (origin <> 'propal')
+	 * and its folder status must be empty.
+	 *
+	 * @param   int     $id   Funding ID
+	 * @return  array
+	 * @phan-return array<string,array{code:int,message:string}>
+	 * @phpstan-return array<string,array{code:int,message:string}>
+	 *
+	 * @throws RestException 403 Not allowed
+	 * @throws RestException 404 Not found
+	 * @throws RestException 409 Nothing to do
+	 * @throws RestException 500 System error
+	 *
+	 * @url	POST fundings/{id}/extension
+	 */
+	public function postFundingExtension($id)
+	{
+		if (!DolibarrApiAccess::$user->hasRight('funding', 'manage')) {
+			throw new RestException(403);
+		}
+		if (!DolibarrApi::_checkAccessToResource('funding', $id, 'funding_funding')) {
+			throw new RestException(403, 'Access to instance id='.$id.' of object not allowed for login '.DolibarrApiAccess::$user->login);
+		}
+
+		$result = $this->funding->fetch($id);
+		if (!$result) {
+			throw new RestException(404, 'Funding not found');
+		}
+
+		// Same conditions as the extension button in funding_card.php
+		if ($this->funding->status != Funding::STATUS_RUNNING) {
+			throw new RestException(409, 'Funding is not running');
+		}
+		if ($this->funding->origin == 'propal') {
+			throw new RestException(409, 'Funding coming from a proposal cannot be put in extension');
+		}
+		if ($this->funding->status_folder == Funding::STATUS_FOLDER_EXTENSION) {
+			throw new RestException(409, 'Funding is already in extension');
+		}
+		if (!empty($this->funding->status_folder)) {
+			throw new RestException(409, 'Funding folder status is not empty');
+		}
+
+		$result = $this->funding->setStatusFolder(DolibarrApiAccess::$user, Funding::STATUS_FOLDER_EXTENSION);
+		if ($result <= 0) {
+			throw new RestException(500, $this->funding->error);
+		}
+
+		return array(
+			'success' => array(
+				'code' => 200,
+				'message' => 'Funding put in extension'
+			)
+		);
+	}
+
+	/**
 	 * Delete funding
 	 *
 	 * @param   int     $id   Funding ID
