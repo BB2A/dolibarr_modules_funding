@@ -829,6 +829,61 @@ class FundingApi extends DolibarrApi
 
 
 	/**
+	 * Validate funding
+	 *
+	 * Validate a funding, conform to what is done on the web card page:
+	 * only a draft funding can be validated, and the payment mode of the
+	 * origin document must match the configured FUNDING_ID_REGLEMENT.
+	 *
+	 * @param   int     $id   Funding ID
+	 * @return  Object			Object after validation
+	 * @phan-return	Funding	Object after validation
+	 * @phpstan-return	Funding	Object after validation
+	 *
+	 * @throws RestException 403 Not allowed
+	 * @throws RestException 404 Not found
+	 * @throws RestException 409 Not in draft status / already validated
+	 * @throws RestException 500 System error
+	 *
+	 * @url	POST fundings/{id}/validate
+	 */
+	public function validateFunding($id)
+	{
+		if (!DolibarrApiAccess::$user->hasRight('funding', 'write')) {
+			throw new RestException(403);
+		}
+		if (!DolibarrApi::_checkAccessToResource('funding', $id, 'funding_funding')) {
+			throw new RestException(403, 'Access to instance id='.$id.' of object not allowed for login '.DolibarrApiAccess::$user->login);
+		}
+
+		$result = $this->funding->fetch($id);
+		if (!$result) {
+			throw new RestException(404, 'Funding not found');
+		}
+
+		if ($this->funding->status != Funding::STATUS_DRAFT) {
+			throw new RestException(409, 'Funding not in draft status, cannot be validated');
+		}
+
+		$result = $this->funding->validate(DolibarrApiAccess::$user);
+		if ($result < 0) {
+			global $langs;
+			$langs->load('funding@funding');
+			$error = $this->funding->error;
+			if (empty($error)) {
+				$error = $langs->trans('novalidreg');
+			}
+			throw new RestException(500, 'Error validating Funding : '.$error);
+		}
+		if ($result == 0) {
+			throw new RestException(409, 'Funding already validated');
+		}
+
+		return $this->getFunding($id);
+	}
+
+
+	/**
 	 * Validate fields before creating or updating object
 	 *
 	 * @param	array		$data   Array of data to validate
