@@ -5,11 +5,18 @@
 - Dolibarr min 18
 
 - NEW - 12/09/2026 - API Ajout de la méthode setFundingAcceptedDenied reproduisant le comportement de l'action setAcceptedRefused de funding_card.php
+- NEW - 12/09/2026 - API Ajout de la possibilité de marquer un document de financement comme demandé (POST/DELETE fundings/{id}/documents/{docfield}/request), sur le même principe que la case "filecheck" de funding_card.php, seulement lorsque le document correspondant n'est pas fourni
+- NEW - 12/09/2026 - API Ajout d'une méthode de validation du financement (POST fundings/{id}/validate) conforme à la fiche web
+
+- FIX - 12/09/2026 - API Utilisation de property_exists() au lieu de isset() pour la détection du champ de demande de document (fundoc{N}check) car isset() retourne false pour une propriété déclarée à null
+
 
 ## [1.1.6] - 09/2026 Dolibarr 24
 - PHP min 8
 - Dolibarr min 18
 
+- NEW - 12/09/2026 - API Ajout de la possibilité de mettre un financement en prolongation via POST fundings/{id}/extension
+- NEW - 12/09/2026 - API Ajout de la possibilité de clôturer un financement via POST fundings/{id}/close
 - NEW - 11/09/2026 - Ajout de la gestion des variables de configuration FUNDING_ID_REGLEMENT et FUNDING_VALIDITY_MONTH dans le constructeur de FundingApi
 - NEW - 11/09/2026 - Ajout de la prise en charge de la traduction des noms de champs dans la méthode de récupération des documents de financement
 - NEW - 11/09/2026 - Ajout de la possibilité de récupérer tous les documents de financement si aucun champ de document n'est spécifié dans la méthode getFundingDocument
