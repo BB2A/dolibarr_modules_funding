@@ -64,7 +64,7 @@ class modFunding extends DolibarrModules
 		$this->editor_name = 'BB2A';
 		$this->editor_url = 'https://www.bb2a.fr';
 		// Possible values for version are: 'development', 'experimental', 'dolibarr', 'dolibarr_deprecated' or a version string like 'x.y.z'
-		$this->version = '1.1.4';
+		$this->version = '1.1.6';
 		// Url to the file with your last numberversion of this module
 		$this->url_last_version = 'https://www.dolibarrversion.bb2a.fr/versionmodulefunding.txt';
 		//$this->needUpdate = '1.0.1';
@@ -133,7 +133,7 @@ class modFunding extends DolibarrModules
 		$this->requiredby = array(); // List of module class names as string to disable if this one is disabled. Example: array('modModuleToDisable1', ...)
 		$this->conflictwith = array(); // List of module class names as string this module is in conflict with. Example: array('modModuleToDisable1', ...)
 		$this->langfiles = array("funding@funding");
-		$this->phpmin = array(8.2); // Minimum version of PHP required by module
+		$this->phpmin = array(8); // Minimum version of PHP required by module
 		$this->need_dolibarr_version = array(18); // Minimum version of Dolibarr required by module
 		$this->warnings_activation = array(); // Warning to show when we activate module. array('always'='text') or array('FR'='textfr','ES'='textes'...)
 		$this->warnings_activation_ext = array(); // Warning to show when we activate an external module. array('always'='text') or array('FR'='textfr','ES'='textes'...)
@@ -248,7 +248,7 @@ class modFunding extends DolibarrModules
 				'frequency' => 1,
 				'unitfrequency' => 86400,
 				'status' => 0,
-				'test' => '$conf->funding->enabled',
+				'test' => isModEnabled('funding'),
 				'priority' => 50,
 			 ),
 			 1 => array(
@@ -263,13 +263,13 @@ class modFunding extends DolibarrModules
 				'frequency' => 4,
 				'unitfrequency' => 604800,
 				'status' => 0,
-				'test' => '$conf->funding->enabled',
+				'test' => isModEnabled('funding'),
 				'priority' => 50,
 			 ),
 		);
 		// Example: $this->cronjobs=array(
-		//    0=>array('label'=>'My label', 'jobtype'=>'method', 'class'=>'/dir/class/file.class.php', 'objectname'=>'MyClass', 'method'=>'myMethod', 'parameters'=>'param1, param2', 'comment'=>'Comment', 'frequency'=>2, 'unitfrequency'=>3600, 'status'=>0, 'test'=>'$conf->funding->enabled', 'priority'=>50),
-		//    1=>array('label'=>'My label', 'jobtype'=>'command', 'command'=>'', 'parameters'=>'param1, param2', 'comment'=>'Comment', 'frequency'=>1, 'unitfrequency'=>3600*24, 'status'=>0, 'test'=>'$conf->funding->enabled', 'priority'=>50)
+		//    0=>array('label'=>'My label', 'jobtype'=>'method', 'class'=>'/dir/class/file.class.php', 'objectname'=>'MyClass', 'method'=>'myMethod', 'parameters'=>'param1, param2', 'comment'=>'Comment', 'frequency'=>2, 'unitfrequency'=>3600, 'status'=>0, 'test'=>isModEnabled('funding'), 'priority'=>50),
+		//    1=>array('label'=>'My label', 'jobtype'=>'command', 'command'=>'', 'parameters'=>'param1, param2', 'comment'=>'Comment', 'frequency'=>1, 'unitfrequency'=>3600*24, 'status'=>0, 'test'=>isModEnabled('funding'), 'priority'=>50)
 		// );
 
 		// Permissions provided by this module

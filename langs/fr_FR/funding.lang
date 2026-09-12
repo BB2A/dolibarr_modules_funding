@@ -39,7 +39,7 @@ Setup=Param
 About=À propos
 FundingAbout=À propos de Financement
 FundingAboutPage=Page à propos de Financement
-BB2ADesc = Intégrateur et Dévelopeur Dolibarr<br> <a href=http://www.bb2a.fr target="_blank">http://www.bb2a.fr</a> - <a href=mailto:contact@bb2a.fr>contact@bb2a.fr</a><br>Documentation dans le dossier doc du module ou sur notre site
+BB2ADesc = Intégrateur et Développeur Dolibarr<br> <a href=http://www.bb2a.fr target="_blank">http://www.bb2a.fr</a> - <a href=mailto:contact@bb2a.fr>contact@bb2a.fr</a><br>Documentation dans le dossier doc du module ou sur notre site
 
 #
 # Changelog page
@@ -63,7 +63,7 @@ Coefficients=Coefficients
 coefficient=Coefficient
 coefficients=Coefficients
 AttachmentsTitleFunding=Financement
-fundingpropal=Proposition financiére
+fundingpropal=Proposition financière
 NoFunding=Pas de financement
 Rent=Loyer
 RentEdit=Loyer personnalisé
@@ -86,7 +86,7 @@ DateDelivery=Date de livraison
 NewFunding=Nouveau financement
 NewCoef=Nouveau coef
 Amount_of=Montant de
-Amount_to=Montant a
+Amount_to=Montant à
 StatusFolder=Statut dossier
 AmountMaint=Montant maintenance
 AmountTotal=Montant total
@@ -97,7 +97,7 @@ CoefCard=Fiche coefficient
 DocumentsForFunding=Documents pour le financement
 FundingFolder=Dossier de financement
 ConfirmDeleteFunding=Êtes-vous sûr de vouloir supprimer ce financement ?
-RefreshFunding=Actiualiser le financement
+RefreshFunding=Actualiser le financement
 ConfirmRefreshFunding=Confirmer l'actualisation des informations?
 Checked=Pointé
 FunCheck=Pointer
@@ -108,32 +108,32 @@ NoFolderFunding=Financement introuvable
 Accepted=Accepté
 Refused=Refusé %s
 CloseAs=Positionner le statut à
-DateAccepted=Date accéptation
+DateAccepted=Date d'acceptation
 DateValidity=Date validité
 DateSignature=Date signature P.V.
-closefinich=Cloturer
+closefinich=Clôturer
 NoFunding=Pas de financement
 Lack=Pièces demandées
 
 #
 # Example box
 #
-FundindBoxValidate=Les derniers financements validé
-FundindBoxValidatePropal=Les dernières propositions financières validé
-FundindBoxUpdate=Les derniers financements mise à jour
-FundindBoxUpdatePropal=Les dernières propositions financieres mise à jour
-FundindBoxAccept=Les derniers financements accepté
-FundindBoxAcceptPropal=Les dernières propositions financieres accepté
-FundindBoxDenied=Les derniers financements refusé
-FundindBoxDeniedPropal=Les dernières propositions financieres refusé
-FundindBoxRunning=Les derniers financements actif
-FundindBoxEnd=Les derniers financements terminé
+FundingBoxValidate=Les derniers financements validés
+FundingBoxValidatePropal=Les dernières propositions financières validées
+FundingBoxUpdate=Les derniers financements mis à jour
+FundingBoxUpdatePropal=Les dernières propositions financières mises à jour
+FundingBoxAccept=Les derniers financements acceptés
+FundingBoxAcceptPropal=Les dernières propositions financières acceptées
+FundingBoxDenied=Les derniers financements refusés
+FundingBoxDeniedPropal=Les dernières propositions financières refusées
+FundingBoxRunning=Les derniers financements actifs
+FundingBoxEnd=Les derniers financements terminés
 
 #
 # Last items in commercial cards
 #
 LastFunding=Les derniers financements
-AllFunding=Tout les financements
+AllFunding=Tous les financements
 
 #
 # Menu
@@ -161,69 +161,67 @@ ListFundingRetention=Liste des retenues de garantie
 # Dictionnaires
 #
 Funding_duration=Financement - Durée
-Funding_scale=Financement - Baréme
+Funding_scale=Financement - Barème
 Funding_type=Financement - Type
 
 #
 # Paramettres
 #
-FUNDING_ID_REGLEMENT=Mode de réglement pour financement
-FUNDING_DEFAULT_DURATION=Valeur par default pour la durée de financement
-FUNDING_DEFAULT_SCALE=Barème par default
-FUNDING_DEFAULT_REDEMPTION=Valeur par default pour le rachat
-FUNDING_DEFAULT_TYPE=Type de financement par default
-FUNDING_VALIDITY_MONTH=Nombres de mois validité offre financement
+FUNDING_ID_REGLEMENT=Mode de règlement pour financement
+FUNDING_DEFAULT_DURATION=Valeur par défaut pour la durée de financement
+FUNDING_DEFAULT_SCALE=Barème par défaut
+FUNDING_DEFAULT_REDEMPTION=Valeur par défaut pour le rachat
+FUNDING_DEFAULT_TYPE=Type de financement par défaut
+FUNDING_VALIDITY_MONTH=Nombre de mois validité offre financement
 
 FUNDING_FILTRE_ORGANIZATION=Filtre organisme financement
-FUNDING_DEFAULT_ORGANIZATION=Organisme par default
+FUNDING_DEFAULT_ORGANIZATION=Organisme par défaut
 
 
-FUNDING_MAIL_DEFAULT=Adresse mail d'envoie par default
+FUNDING_MAIL_DEFAULT=Adresse mail d'envoi par défaut
 FUNDING_MAIL_AUTOCOPY_TO=Adresse mail de copie automatique
-FUNDING_MAIL_VALIDATION=Adresse mail notification validation fiancement
-FUNDING_MAIL_REPORT=Adresse mail d'envoie des rapports
+FUNDING_MAIL_VALIDATION=Adresse mail notification validation financement
+FUNDING_MAIL_REPORT=Adresse mail d'envoi des rapports
 
-FUNDING_NOCLOSEDFINISHAUTO_EXTENSION=Type de financement mis en extenssion à la date de fin
+FUNDING_NOCLOSEDFINISHAUTO_EXTENSION=Type de financement mis en extension à la date de fin
 
-FUNDING_LISTE_THIRDPARTY_PROPAL=Afficher les propositions de financement dans tier
-FUNDING_LISTE_THIRDPARTY_PROPAL_SHORTLIST=Afficher les propositions de financement dans la liste coute du tiers
+FUNDING_LISTE_THIRDPARTY_PROPAL=Afficher les propositions de financement dans tiers
+FUNDING_LISTE_THIRDPARTY_PROPAL_SHORTLIST=Afficher les propositions de financement dans la liste coût du tiers
 
-FUNDING_ENABLED_RENTEDIT=Activer le loyer personalisé (Uniquement sur les propositions)
+FUNDING_ENABLED_RENTEDIT=Activer le loyer personnalisé (Uniquement sur les propositions)
 
 #
 # Aides
 #
-Help_studyNumber=Numéro d'etude délivré par l'organisme de financement
+Help_studyNumber=Numéro d'étude délivré par l'organisme de financement
 Help_folderNumber=Numéro de dossier délivré par l'organisme de financement
 Help_amount=Montant à financer
 Help_amountMaint=Montant de la maintenance
 Help_amountTotal=Montant total du financement
 Help_duration=Durée du financement
-Help_coef=Coéficiant de calcul
+Help_coef=Coefficient de calcul
 Help_redemption_number=Numéro de dossier racheté
 Help_retention=RG (Retenue de garantie)
 Help_retention_rate=Pourcentage de retenue de garantie
-Help_retention_mount=Valeur de la retenu de garantie
-Help_amountRent=Montant des loyer
-Help_amountRentEdit=Uniquement pour les propositions commercial. Il est arrondi à l'euro supérieur.. 
-Help_dateDelivery=Date d'acceptation du dossier par le bailleur
-Help_dateDelivery=Date de fin de validité de l'acceptation
+Help_retention_mount=Valeur de la retenue de garantie
+Help_amountRent=Montant des loyers
+Help_amountRentEdit=Uniquement pour les propositions commerciales. Il est arrondi à l'euro supérieur.
 Help_dateDelivery=Date de livraison du matériel
-Help_dateSignature=Date de signature du procès verbale de livraison
+Help_dateSignature=Date de signature du procès-verbal de livraison
 Help_dateEndCalculated=Date de fin calculé (Si calcul automatique fait à partir de la date de livraison)
 Help_dateEnd=Date de fin du financement (Si calcul automatique fait à partir de la date de signature)
 Help_scale=Barème de financement
 Help_linkToOrganization=Organisme de financement
-Help_linkToThirparty=Tiers concerné par le financement
-Help_linkToThirpartyInvoice=Tiers payeur défini sur la commande ou la proposition
+Help_linkToThirdParty=Tiers concerné par le financement
+Help_linkToThirdPartyInvoice=Tiers payeur défini sur la commande ou la proposition
 Help_documentRequired=Document requis
 Help_documentNotRequired=Document non requis
 
 #
 # Info admin
 #
-OrderExistForPropal=Une commande existe pour cette proposition financiére.
-OrdersExistForPropal=Plusieurs commandes d'associer à cette proposition.
+OrderExistForPropal=Une commande existe pour cette proposition financière.
+OrdersExistForPropal=Plusieurs commandes à associer à cette proposition.
 LinkFundingOrder=Aller sur le financement de la commande
 OrderRegIsNotFunding=Le mode de règlement sur la commande n'est pas défini sur financement.
 
@@ -233,78 +231,78 @@ OrderRegIsNotFunding=Le mode de règlement sur la commande n'est pas défini sur
 RightReadFunding=Lire
 RightCreateUpdateFunding=Créer / modifier
 RightDeleteFunding=Supprimer
-RightManageFunding=Manager les financements
+RightManageFunding=Gérer les financements
 RightListsFunding=Liste des financements
-RightReadCoefficient=Lire les coef
-RightCreateUpdateCoefficient=Creer / modifier les coef
-RightDeleteCoefficient=Supprimer les coef
-RightReadRetention=Lire les retenues de garanties
-RightCreateUpdateRetention=Creer / modifier les retenues de garanties
-RightDeleteRetention=Supprimer les retenues de garanties
+RightReadCoefficient=Lire les coefficients
+RightCreateUpdateCoefficient=Créer / modifier les coefficients
+RightDeleteCoefficient=Supprimer les coefficients
+RightReadRetention=Lire les retenues de garantie
+RightCreateUpdateRetention=Créer / modifier les retenues de garantie
+RightDeleteRetention=Supprimer les retenues de garantie
 
 #
 # Events messages
 #
 commnok=Commercial introuvable
-coefnok=Coef introuvable
-novalidreg=Financement non validé changer le mode de réglement
+coefnok=Coefficient introuvable
+novalidreg=Financement non validé, changer le mode de règlement
 documentnotvalidated=Document non validé
 CantBeValidated=Financement non validé
-paramnok=Parametres manquants
-checknok=Tous les paramétres ne sont pas réunis
+paramnok=Paramètres manquants
+checknok=Tous les paramètres ne sont pas réunis
 creatrefnok=Création ref impossible
-amountRentEdit<amountRent=Loyer personnalisé modifié, car inférieur ou égale au montant calculé
+amountRentEdit<amountRent=Loyer personnalisé modifié, car inférieur ou égal au montant calculé
 amountRentEdit>amountRent=Loyer personnalisé supérieur au montant calculé
 nodoc=Document non trouvé
-socinvoicenok=Societe de facturation non trouvé
-supppropalnok=Un financement existe suppresion impossible
+socinvoicenok=Société de facturation non trouvée
+supppropalnok=Un financement existe, suppression impossible
 updateok=Mise à jour du financement
 updatenok=Mise à jour du financement impossible
 orderreopennok=Réouverture impossible financement en cours
-clonfudpropal=Financement copier depuis la proposition
-deletnok=Suppresion impossible
-fundingaccepted=Financement accépté %s
-fundingnotaccepted=Financement non accépté %s
+clonfudpropal=Financement copié depuis la proposition
+deletnok=Suppression impossible
+fundingaccepted=Financement accepté %s
+fundingnotaccepted=Financement non accepté %s
 fundingcheked=Financement pointé %s
 fundingnotcheked=Financement non pointé %s
-fundinguncheked=Financement non pointé %s
+fundinguncheked=Financement dépointé %s
 fundingnotuncheked=Financement non dépointé %s
-fundingnotdatedelivry=Date de livraison manquante
+fundingnotdatedelivery=Date de livraison manquante
 fundingnotdatesign=Date de signature manquante
 statusfundingnok=Financement changement du statut impossible
 fundingdraft=Financement mis en brouillon
 fundingvalidated=Financement mis en nouveau
 fundingcancel=Financement annulé
 
-hasBeenSendOrg=Finacements envoyés aux organismes %s
-CantBeSendOrg=Finacements non envoyés aux organismes %s
+hasBeenSendOrg=Financements envoyés aux organismes %s
+CantBeSendOrg=Financements non envoyés aux organismes %s
 
-hasBeenLack=Financements pièces manquantent %s
-CantBeLack=Financements pas de pièces manquantent %s
-ErrorIsNotValidateOrAccepted=Financements non validé ou déjà accepté
+hasBeenLack=Financements pièces manquantes %s
+CantBeLack=Financements sans pièces manquantes %s
+ErrorIsNotValidateOrAccepted=Financements non validés ou déjà acceptés
 
-hasBeenRun=Financements actif %s
-CantBeRun=Financements non actif %s
-ErrorIsNotAccept=Financements non accepté %s
+hasBeenRun=Financements actifs %s
+CantBeRun=Financements non actifs %s
+ErrorIsNotAccept=Financements non acceptés %s
 
-hasBeenExtension=Financements prolongé %s
-CantBeExtension=Financements non prolongé %s
-ErrorIsNoRunningNoOrder=Financements non actif
+hasBeenExtension=Financements prolongés %s
+CantBeExtension=Financements non prolongés %s
+ErrorIsNoRunningNoOrder=Financements non actifs
 
 FileAdded=Fichier ajouté
-ErrorFailToAddedFile=Erreur ajout du fichier
+ErrorFailToAddedFile=Erreur lors de l'ajout du fichier
 FilesChecked=Fichier demandé
 FilesUnChecked=Fichier retiré de la demande
-ErrorFailToFilesChecked=Erreur ajout demande de fichier
-ErrorFailToFilesUnChecked=Erreur retré du fichier demandé
+ErrorFailToFilesChecked=Erreur lors de l'ajout de la demande de fichier
+ErrorFailToFilesUnChecked=Erreur lors du retrait du fichier demandé
 
-ErrorMontMaintInFund=Montant de maintenance dans le financement le rajouter dans la commande
+ErrorMontMaintInFund=Montant de maintenance dans le financement à ajouter dans la commande
 SendFunding=Envoyer le financement
 
-ErrorFileNotRename=Impossible de rennomer le fichier
+ErrorFileNotRename=Impossible de renommer le fichier
 
 NoFileSearch=Pas de fichier trouvé
-FileAdding=Fichier trouvé et ajouter
+FileAdding=Fichier trouvé et ajouté
 
 NoDurationValue=Pas de durée de validité renseigné
 
@@ -313,7 +311,7 @@ NoDurationValue=Pas de durée de validité renseigné
 #
 FundingStatusDraft=Financement brouillon
 FundingStatusValidated=Nouveau financement
-FundingStatusUpdate=Financement mise à jour
+FundingStatusUpdate=Financement mis à jour
 FundingStatusLack=Financement envoyé à l'organisme
 FundingStatusAccept=Financement accepté
 FundingStatusDenied=Financement refusé
@@ -334,19 +332,25 @@ FundingStatusDisabledShort=Annulé
 # Status folder
 #
 FundingStatusFolderSendOrg=Etude en cours
-FundingStatusFolderLack=Pièces à fournir pour étude
-FundingStatusFolderLackOk=Pièces ok
-FundingStatusFolderAcceptRetention=Dossier avec RG
-FundingStatusFolderDenounced=Financement dénoncé
-FundingStatusFolderRedeemed=Financement racheté
-FundingStatusFolderExtension=Prolongation du financement
 FundingStatusFolderSendOrgShort=Etude en cours
+FundingStatusFolderLack=Pièces à fournir pour étude
 FundingStatusFolderLackShort=Pièces pour étude
+FundingStatusFolderLackOk=Pièces ok
 FundingStatusFolderLackOkShort=Pièce ok
+FundingStatusFolderAcceptRetention=Dossier avec RG
 FundingStatusFolderAcceptRetentionShort=Dossier avec RG
-FundingStatusFolderDenouncedShort=Dénonciation au terme
-FundingStatusFolderRedeemedShort=Contrat racheté
+FundingStatusFolderExtension=Prolongation du financement
 FundingStatusFolderExtensionShort=Prolongation en cours
+
+
+FundingStatusFolderRedeemed=Financement racheté
+FundingStatusFolderRedeemedShort=Racheté
+FundingStatusFolderDenounced=Dénonciation au terme
+FundingStatusFolderDenouncedShort=Dénoncé
+FundingStatusFolderClosedLessor=Financement clôturé par le bailleur
+FundingStatusFolderClosedLessorShort=Clôturé bailleur
+FundingStatusFolderClosedTransfer=Financement transféré sur un autre tiers
+FundingStatusFolderClosedTransferShort=Transféré
 
 #
 # Documents
@@ -354,24 +358,24 @@ FundingStatusFolderExtensionShort=Prolongation en cours
 fundoc1=RIB
 fundoc2=Kbis
 fundoc3=Bilan
-fundoc4=Piéce d'identitée
+fundoc4=Pièce d'identité
 fundoc5=Acte notarié
 fundoc6=Assurance
 funfoldoc1=Acceptation
 funfoldoc2=Dossier
 funfoldoc3=Dossier signé
 funfoldoc4=Facture
-funfoldoc5=Rachat demande
+funfoldoc5=Demande de rachat
 funfoldoc6=Rachat signé
 
 #
 # Trigger
 #
-CREATEInDolibarr=Financement %s Creer
+CREATEInDolibarr=Financement %s créé
 VALIDATEInDolibarr=Financement %s validé
 SENTBYMAILInDolibarr=Financement envoyé par mail
 UPDATEInDolibarr=Financement %s mis à jour
-ACCEPTInDolibarr=Financement %s Accépté
+ACCEPTInDolibarr=Financement %s accepté
 DENIEDInDolibarr=Financement %s Refusé
 RUNNINGInDolibarr=Financement %s En cours
 ENDInDolibarr=Financement %s Fini
@@ -382,59 +386,59 @@ SENDORGInDolibarr=Financement %s Envoyé à l'organisme
 LACKInDolibarr=Financement %s Manque des documents
 LACKOKInDolibarr=Financement %s documents rajoutés
 EXTENSIONInDolibarr=Financement %s Prolongation
-COEFFICIENTDISABLEInDolibarr=Coefficient %s desactivé
+COEFFICIENTDISABLEInDolibarr=Coefficient %s désactivé
 COEFFICIENTENABLEnDolibarr=Coefficient %s activé
 
 
 #
-# Buttun action
+# Boutons actions
 #
 UpdateForce=Mise à jour des taux
 Clean=Nettoyer
-BtnSendorg=Envoyé à l'organisme
+BtnSendOrg=Envoyé à l'organisme
 BtnRunning=Actif
 BtnExtension=Prolongation
 BtnLack=Pièces manquantes
-searchdocinotherfunding=Récupéréer Documents
+searchdocinotherfunding=Récupérer les documents
 
 #
 # Mass actions
 #
 ConfirmMassSendOrg=Financements envoyés aux organismes
-ConfirmMassSendOrgQuestion=Voulez vous mettre les financements en envoyés
-ConfirmMassLAck=Passer les financements en pièces manquantent
-ConfirmMassLackQuestion=Voulez vous mettre les financements en pièces manquantent?
-ConfirmMassAccepted=Passer les financements en accépté
-ConfirmMassAcceptedQuestion=Voulez vous mettre les financements en accépté?
+ConfirmMassSendOrgQuestion=Voulez-vous mettre les financements en envoyés
+ConfirmMassLack=Passer les financements en pièces manquantes
+ConfirmMassLackQuestion=Voulez-vous mettre les financements en pièces manquantes?
+ConfirmMassAccepted=Passer les financements en acceptés
+ConfirmMassAcceptedQuestion=Voulez-vous mettre les financements en acceptés?
 ConfirmMassRefused=Passer les financements en refusé
-ConfirmMassRefusedQuestion=Voulez vous mettre les financements en refusé?
-ConfirmMassRunning=Passer les financements en actif
-ConfirmMassRunningQuestion=Voulez vous mettre les financements en actif?
+ConfirmMassRefusedQuestion=Voulez-vous mettre les financements en refusé?
+ConfirmMassRunning=Passer les financements en actifs
+ConfirmMassRunningQuestion=Voulez-vous mettre les financements en actifs?
 ConfirmMassExtension=Passer les financements en extension
-ConfirmMassExtensionQuestion=Voulez vous mettre les financements en extension?
+ConfirmMassExtensionQuestion=Voulez-vous mettre les financements en extension?
 
 
 #
 # Cron
 #
 CronFundingEnd = Financement terminé
-CommentCronFundingEnd = Met à jour le statut des financements actif, qui ne sont pas en prolongation et dont la date de fin est dépassé.
-OutputCronFundingEnd = Financement mis a jour automatiquement: 
-OutputNoSetStatusCronFundingEnd = Des mises a jour de statut non pas été effectué.
+CommentCronFundingEnd = Met à jour le statut des financements actifs, qui ne sont pas en prolongation et dont la date de fin est dépassée.
+OutputCronFundingEnd = Financement mis à jour automatiquement :
+OutputNoSetStatusCronFundingEnd = Des mises à jour de statut n'ont pas été effectuées.
 
-CronFundingSoonFinished = Financement bientot termine
-CommentCronFundingSoonFinished = Envoie des notifications aux commerciaux pour leur indiquer la fin des financements. Param: $duration -> en mois par default 6 mois si vide (Prend les financements qui se termine dans les 6 prochains mois)
-OutputCronFundingSoonFinished = Financement bientot a terme
-OutputCronFundingsSoonFinished = Financements bientot a terme
-OutputCronFundingsSoonFinishedAll = Total des financements bientot a terme
-NotFundingSoonFinished=Pas de financement bientot a terme
+CronFundingSoonFinished = Financement bientôt terminé
+CommentCronFundingSoonFinished = Envoie des notifications aux commerciaux pour leur indiquer la fin des financements. Param: $duration -> en mois par défaut 6 mois si vide (Prend les financements qui se terminent dans les 6 prochains mois)
+OutputCronFundingSoonFinished = Financement bientôt à terme
+OutputCronFundingsSoonFinished = Financements bientôt à terme
+OutputCronFundingsSoonFinishedAll = Total des financements bientôt à terme
+NotFundingSoonFinished=Pas de financement bientôt à terme
 
 FundingMessageMailIntroText = Bonjour %s,
-FundingMessageMailMessageText = Voici tes financements qui arrive bientot à terme.
+FundingMessageMailMessageText = Voici vos financements qui arrivent bientôt à terme.
 
 
 #
 # Notifications
 #
-Notify_FUNDING_VALIDATE=Financement vilidé
+Notify_FUNDING_VALIDATE=Financement validé
 Notify_FUNDING_SENTBYMAIL=Financement envoyé par mail

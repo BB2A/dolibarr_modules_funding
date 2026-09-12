@@ -89,9 +89,15 @@ class Funding extends CommonObject
 	const STATUS_FOLDER_LACK = 2;
 	const STATUS_FOLDER_LACKOK = 3;
 	const STATUS_FOLDER_ACCEPT_RETENTION = 5;
-	const STATUS_FOLDER_DENOUNCED = 7;
-	const STATUS_FOLDER_REDEEMED = 8;
 	const STATUS_FOLDER_EXTENSION = 9;
+
+	// STATUS_FOLDER_REDEEMED passage 8 en 20
+	const STATUS_FOLDER_REDEEMED = 20;
+	// STATUS_FOLDER_REDEEMED passage 7 en 21
+	const STATUS_FOLDER_DENOUNCED = 21;
+	const STATUS_FOLDER_CLOSED_TRANSFER = 22;
+	const STATUS_FOLDER_CLOSED_LESSOR = 23;
+
 
 	/**
 	 *  'type' field format:
@@ -633,12 +639,14 @@ class Funding extends CommonObject
 	 *
 	 * @param   User    $user       User that creates
 	 * @param   int     $fromid     Id of object to clone
-	 * @param   int     $origin     Id of object to clone
-	 * @param   int     $origin_id  Id of object to clone
+	 * @param   text    $origin     Type of origin (propal, order, invoice)
+	 * @param   int     $origin_id  Id of origin object to link to
+	 * @param   int     $fk_soc     Id of third party to link to
+	 * @param   int     $type       Type of clone 0=clone, 1=clone no documents, 2=1 + clean references
 	 * @param   int     $notrigger  false=launch triggers after, true=disable triggers
 	 * @return  mixed               New object created, <0 if KO
 	 */
-	public function createFromClone(User $user, $fromid, $origin, $origin_id, $notrigger = 0)
+	public function createFromClone(User $user, $fromid, $origin = '', $origin_id = 0, $fk_soc = 0, $type = 0, $notrigger = 0)
 	{
 		global $conf, $db, $langs, $extrafields;
 		$error = 0;
@@ -659,16 +667,25 @@ class Funding extends CommonObject
 		unset($object->import_key);
 		unset($object->amount_rent_edit);
 
+		if ($type >= 2) {
+			// Reset some properties
+			unset($object->study_number);
+			unset($object->folder_number);
+		}
+
 		// Clear fields
 		if (property_exists($object, 'ref')) {
 			$object->ref = empty($this->fields['ref']['default']) ? "Copy_Of_".$object->ref : $this->fields['ref']['default'];
 		}
 		//if (property_exists($object, 'label')) $object->label = empty($this->fields['label']['default']) ? $langs->trans("CopyOf")." ".$object->label : $this->fields['label']['default'];
-		if (property_exists($object, 'origin')) {
+		if (property_exists($object, 'origin') && !empty($origin)) {
 			$object->origin = $origin;
 		}
-		if (property_exists($object, 'origin_id')) {
+		if (property_exists($object, 'origin_id') && !empty($origin_id)) {
 			$object->origin_id = $origin_id;
+		}
+		if (property_exists($object, 'fk_soc') && !empty($fk_soc)) {
+			$object->fk_soc = $fk_soc;
 		}
 		if (property_exists($object, 'status')) {
 			$object->status = self::STATUS_DRAFT;
@@ -732,7 +749,7 @@ class Funding extends CommonObject
 		}
 		unset($object->context['createfromclone']);
 
-		if (!$error) {
+		if (!$error && $type == 0) {
 			// Copy documents
 			$oldref = dol_sanitizeFileName($oldref);
 			$newref = dol_sanitizeFileName($object->ref);
@@ -1115,7 +1132,6 @@ class Funding extends CommonObject
 						$this->date_delivery = $document->date_livraison;
 					}
 
-
 					// Note to self:
 					// Signature date filled when marked delivered
 					// On invoice, request the signature date and prefill it if it already exists
@@ -1132,14 +1148,17 @@ class Funding extends CommonObject
 					}
 
 					// Signature date filled if order is delivered and billed, and calculate end date from signature date
-					$this->date_end = '';
+					// $this->date_end = '';
 					if ($document->billed == 1) {
 						$this->date_signature = !empty($this->date_signature) ? $this->date_signature : $this->date_delivery;
 
 						// Add the duration to the signature date to calculate the end date
 						$duration = $this->fetchDuration($this->fk_duration);
 						if ($duration->code > 0) {
-							$this->date_end = date('Y-m-d', strtotime('+'.$duration->code.' month', strtotime(date('Y-m-d', $this->date_signature))));
+							$this->date_end_calculated = date('Y-m-d', strtotime('+'.$duration->code.' month', strtotime(date('Y-m-d', $this->date_signature))));
+							if (empty($this->date_end)) {
+								$this->date_end = $this->date_end_calculated;
+							}
 						}
 					}
 					// Change the status if the document amount changes and the funding is accepted
@@ -1516,7 +1535,7 @@ class Funding extends CommonObject
 
 		if (!empty($typedoc) && !empty($iddoc)) {
 			$document = $this->infodoc($iddoc, $typedoc);
-			if (!empty($this->date_signature) && !empty($this->date_delivery) && !empty($document->date_livraison) || !empty($document->delivery_date) && $this->status == self::STATUS_ACCEPT && $document->status > 0) {
+			if (!empty($this->date_signature) && $this->status == self::STATUS_ACCEPT && $document->status > 0) {
 				$status = self::STATUS_RUNNING;
 				$triger = 'FUNDING_RUNNING';
 				return $this->setStatusCommon($user, $status, $notrigger, $triger);
@@ -1525,8 +1544,7 @@ class Funding extends CommonObject
 					setEventMessages($langs->trans('documentnotvalidated'), '', 'errors');
 				} elseif ($this->status >= self::STATUS_RUNNING) {
 					setEventMessages($langs->trans('statusfundingnok'), '', 'errors');
-				} elseif (empty($document->date_livraison) || empty($this->date_delivery)) {
-					setEventMessages('test', null, 'errors');
+				} elseif (empty($this->date_delivery)) {
 					setEventMessages($langs->trans('fundingnotdatedelivry'), '', 'errors');
 				} elseif (empty($this->date_signature)) {
 					setEventMessages($langs->trans('fundingnotdatesign'), '', 'errors');
@@ -1766,6 +1784,56 @@ class Funding extends CommonObject
 		$sql .= " WHERE rowid = ".$this->id;
 
 		dol_syslog(__METHOD__.' $this->id='.$this->id.', date_accepted ='.$date_accepted.', date_endvalidity ='.$date_endvalidity, LOG_DEBUG);
+
+			// Execute the query
+		$resql = $this->db->query($sql);
+
+		if (!$resql) {
+			$this->errors[] = $this->db->error();
+			$error++;
+		}
+
+		if (!$error) {
+			$this->db->commit();
+			if (!$notrigger && empty($error)) {
+				// Call trigger
+				$result = $this->call_trigger('FUNDING_MODIFY', $user);
+				if ($result < 0) {
+					$error++;
+				}
+				// End call triggers
+			}
+			return 1;
+		} else {
+			foreach ($this->errors as $errmsg) {
+				dol_syslog(__METHOD__.' Error: '.$errmsg, LOG_ERR);
+				$this->error .= ($this->error ? ', '.$errmsg : $errmsg);
+			}
+			setEventMessages($this->error, '', 'errors');
+			$this->db->rollback();
+			return -1 * $error;
+		}
+	}
+	/**
+		 * Update object into database
+		 *
+		 * @param  User     $user               User that modifies
+		 * @param  date   $date_end            Date funding end
+		 * @param  bool     $notrigger          false=launch triggers after, true=disable triggers
+		 * @return int                          <0 if KO, >0 if OK
+		 */
+	public function setDateEnd($user, $date_end, $notrigger = 0)
+	{
+		global $langs;
+
+		$error = 0;
+
+		// Record end date
+		$sql = "UPDATE ".MAIN_DB_PREFIX."funding_funding";
+		$sql .= " SET date_end = ".(!empty($date_end) ? "'".$date_end."'" : 'null');
+		$sql .= " WHERE rowid = ".$this->id;
+
+		dol_syslog(__METHOD__.' $this->id='.$this->id.', date_end ='.$date_end, LOG_DEBUG);
 
 			// Execute the query
 		$resql = $this->db->query($sql);
@@ -2050,16 +2118,23 @@ class Funding extends CommonObject
 			$this->labelStatusFolder[self::STATUS_FOLDER_LACK] = $langs->trans('FundingStatusFolderLack');
 			$this->labelStatusFolder[self::STATUS_FOLDER_LACKOK] = $langs->trans('FundingStatusFolderLackOk');
 			$this->labelStatusFolder[self::STATUS_FOLDER_ACCEPT_RETENTION] = $langs->trans('FundingStatusFolderAcceptRetention');
-			$this->labelStatusFolder[self::STATUS_FOLDER_DENOUNCED] = $langs->trans('FundingStatusFolderDenounced');
 			$this->labelStatusFolder[self::STATUS_FOLDER_REDEEMED] = $langs->trans('FundingStatusFolderRedeemed');
 			$this->labelStatusFolder[self::STATUS_FOLDER_EXTENSION] = $langs->trans('FundingStatusFolderExtension');
+
+			$this->labelStatusFolder[self::STATUS_FOLDER_DENOUNCED] = $langs->trans('FundingStatusFolderDenounced');
+			$this->labelStatusFolder[self::STATUS_FOLDER_CLOSED_LESSOR] = $langs->trans('FundingStatusFolderClosedLessor');
+			$this->labelStatusFolder[self::STATUS_FOLDER_CLOSED_TRANSFER] = $langs->trans('FundingStatusFolderClosedTransfer');
+
 			$this->labelStatusFolderShort[self::STATUS_FOLDER_SENDORG] = $langs->trans('FundingStatusFolderSendOrgShort');
 			$this->labelStatusFolderShort[self::STATUS_FOLDER_LACK] = $langs->trans('FundingStatusFolderLackShort');
 			$this->labelStatusFolderShort[self::STATUS_FOLDER_LACKOK] = $langs->trans('FundingStatusFolderLackOkShort');
 			$this->labelStatusFolderShort[self::STATUS_FOLDER_ACCEPT_RETENTION] = $langs->trans('FundingStatusFolderAcceptRetentionShort');
-			$this->labelStatusFolderShort[self::STATUS_FOLDER_DENOUNCED] = $langs->trans('FundingStatusFolderDenouncedShort');
 			$this->labelStatusFolderShort[self::STATUS_FOLDER_REDEEMED] = $langs->trans('FundingStatusFolderRedeemedShort');
 			$this->labelStatusFolderShort[self::STATUS_FOLDER_EXTENSION] = $langs->trans('FundingStatusFolderExtensionShort');
+
+			$this->labelStatusFolderShort[self::STATUS_FOLDER_DENOUNCED] = $langs->trans('FundingStatusFolderDenouncedShort');
+			$this->labelStatusFolderShort[self::STATUS_FOLDER_CLOSED_LESSOR] = $langs->trans('FundingStatusFolderClosedLessorShort');
+			$this->labelStatusFolderShort[self::STATUS_FOLDER_CLOSED_TRANSFER] = $langs->trans('FundingStatusFolderClosedTransferShort');
 		}
 
 		// Status correspondence with display formats
