@@ -884,6 +884,61 @@ class FundingApi extends DolibarrApi
 
 
 	/**
+	 * Reopen a funding (réouvrir)
+	 *
+	 * Same conditions as the "reopen" action / button in funding_card.php:
+	 * requires the funding:write right, the funding must not come from a
+	 * proposal (origin <> 'propal') and its status must be greater than or
+	 * equal to STATUS_RUNNING. The funding is then put back to STATUS_ACCEPT
+	 * through setStatusCommon, triggering FUNDING_REOPEN.
+	 *
+	 * @param   int     $id   Funding ID
+	 * @return  Object			Object after reopening
+	 * @phan-return	Funding	Object after reopening
+	 * @phpstan-return	Funding	Object after reopening
+	 *
+	 * @throws RestException 403 Not allowed
+	 * @throws RestException 404 Not found
+	 * @throws RestException 409 Nothing to do
+	 * @throws RestException 500 System error
+	 *
+	 * @url	POST fundings/{id}/reopen
+	 */
+	public function postFundingReopen($id)
+	{
+		if (!DolibarrApiAccess::$user->hasRight('funding', 'write')) {
+			throw new RestException(403);
+		}
+		if (!DolibarrApi::_checkAccessToResource('funding', $id, 'funding_funding')) {
+			throw new RestException(403, 'Access to instance id='.$id.' of object not allowed for login '.DolibarrApiAccess::$user->login);
+		}
+
+		$result = $this->funding->fetch($id);
+		if (!$result) {
+			throw new RestException(404, 'Funding not found');
+		}
+
+		// Same conditions as the reopen button in funding_card.php
+		if ($this->funding->origin == 'propal') {
+			throw new RestException(409, 'Funding coming from a proposal cannot be reopened');
+		}
+		if ($this->funding->status < Funding::STATUS_RUNNING) {
+			throw new RestException(409, 'Funding is not running or closed, cannot be reopened');
+		}
+
+		$result = $this->funding->setStatusCommon(DolibarrApiAccess::$user, Funding::STATUS_ACCEPT, 0, 'FUNDING_REOPEN');
+		if ($result < 0) {
+			throw new RestException(500, 'Error reopening Funding : '.$this->funding->error);
+		}
+		if ($result == 0) {
+			throw new RestException(409, 'Funding already reopened');
+		}
+
+		return $this->getFunding($id);
+	}
+
+
+	/**
 	 * Validate fields before creating or updating object
 	 *
 	 * @param	array		$data   Array of data to validate

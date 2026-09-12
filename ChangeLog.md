@@ -7,6 +7,7 @@
 - NEW - 12/09/2026 - API Ajout de la méthode setFundingAcceptedDenied reproduisant le comportement de l'action setAcceptedRefused de funding_card.php
 - NEW - 12/09/2026 - API Ajout de la possibilité de marquer un document de financement comme demandé (POST/DELETE fundings/{id}/documents/{docfield}/request), sur le même principe que la case "filecheck" de funding_card.php, seulement lorsque le document correspondant n'est pas fourni
 - NEW - 12/09/2026 - API Ajout d'une méthode de validation du financement (POST fundings/{id}/validate) conforme à la fiche web
+- NEW - 12/09/2026 - API Ajout de la possibilité de réouvrir un financement via POST fundings/{id}/reopen, aux mêmes conditions que le bouton "ReOpen" de funding_card.php (droit funding:write, origine <> propal, statut >= STATUS_RUNNING, remise au statut STATUS_ACCEPT via FUNDING_REOPEN)
 
 - FIX - 12/09/2026 - API Utilisation de property_exists() au lieu de isset() pour la détection du champ de demande de document (fundoc{N}check) car isset() retourne false pour une propriété déclarée à null
 
