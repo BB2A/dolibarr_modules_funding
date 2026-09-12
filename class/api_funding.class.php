@@ -651,6 +651,140 @@ class FundingApi extends DolibarrApi
 	}
 
 	/**
+	 * Put funding in extension (prolongation)
+	 *
+	 * Same conditions as the "extension" action in funding_card.php:
+	 * requires the funding:manage right, the funding must be running
+	 * (status == STATUS_RUNNING), not coming from a proposal (origin <> 'propal')
+	 * and its folder status must be empty.
+	 *
+	 * @param   int     $id   Funding ID
+	 * @return  array
+	 * @phan-return array<string,array{code:int,message:string}>
+	 * @phpstan-return array<string,array{code:int,message:string}>
+	 *
+	 * @throws RestException 403 Not allowed
+	 * @throws RestException 404 Not found
+	 * @throws RestException 409 Nothing to do
+	 * @throws RestException 500 System error
+	 *
+	 * @url	POST fundings/{id}/extension
+	 */
+	public function postFundingExtension($id)
+	{
+		if (!DolibarrApiAccess::$user->hasRight('funding', 'manage')) {
+			throw new RestException(403);
+		}
+		if (!DolibarrApi::_checkAccessToResource('funding', $id, 'funding_funding')) {
+			throw new RestException(403, 'Access to instance id='.$id.' of object not allowed for login '.DolibarrApiAccess::$user->login);
+		}
+
+		$result = $this->funding->fetch($id);
+		if (!$result) {
+			throw new RestException(404, 'Funding not found');
+		}
+
+		// Same conditions as the extension button in funding_card.php
+		if ($this->funding->status != Funding::STATUS_RUNNING) {
+			throw new RestException(409, 'Funding is not running');
+		}
+		if ($this->funding->origin == 'propal') {
+			throw new RestException(409, 'Funding coming from a proposal cannot be put in extension');
+		}
+		if ($this->funding->status_folder == Funding::STATUS_FOLDER_EXTENSION) {
+			throw new RestException(409, 'Funding is already in extension');
+		}
+		if (!empty($this->funding->status_folder)) {
+			throw new RestException(409, 'Funding folder status is not empty');
+		}
+
+		$result = $this->funding->setStatusFolder(DolibarrApiAccess::$user, Funding::STATUS_FOLDER_EXTENSION);
+		if ($result <= 0) {
+			throw new RestException(500, $this->funding->error);
+		}
+
+		return array(
+			'success' => array(
+				'code' => 200,
+				'message' => 'Funding put in extension'
+			)
+		);
+	}
+
+	/**
+	 * Close funding (cloturer)
+	 *
+	 * Same conditions as the "setCloseFinich" action in funding_card.php:
+	 * requires the funding:write right and the funding must be running
+	 * (status == STATUS_RUNNING). The closing status folder must be one of
+	 * REDEEMED, DENOUNCED, CLOSED_TRANSFER or CLOSED_LESSOR (same list as the
+	 * confirmation form). An optional note can be appended to the description.
+	 *
+	 * @param   int     $id           Funding ID
+	 * @param   string  $request_data  JSON body with "status_folder" (required) and "note" (optional)
+	 * @return  array
+	 * @phan-return array<string,array{code:int,message:string}>
+	 * @phpstan-return array<string,array{code:int,message:string}>
+	 *
+	 * @throws RestException 403 Not allowed
+	 * @throws RestException 404 Not found
+	 * @throws RestException 400 Bad request
+	 * @throws RestException 409 Nothing to do
+	 * @throws RestException 500 System error
+	 *
+	 * @url	POST fundings/{id}/close
+	 */
+	public function postFundingClose($id, $request_data = null)
+	{
+		if (!DolibarrApiAccess::$user->hasRight('funding', 'write')) {
+			throw new RestException(403);
+		}
+		if (!DolibarrApi::_checkAccessToResource('funding', $id, 'funding_funding')) {
+			throw new RestException(403, 'Access to instance id='.$id.' of object not allowed for login '.DolibarrApiAccess::$user->login);
+		}
+
+		$result = $this->funding->fetch($id);
+		if (!$result) {
+			throw new RestException(404, 'Funding not found');
+		}
+
+		// Same condition as the closefinich button / setCloseFinich action in funding_card.php
+		if ($this->funding->status != Funding::STATUS_RUNNING) {
+			throw new RestException(409, 'Funding is not running');
+		}
+
+		// Closing status folder must be one of the values proposed by the confirmation form
+		$allowed_status_folder = array(
+			Funding::STATUS_FOLDER_REDEEMED,
+			Funding::STATUS_FOLDER_DENOUNCED,
+			Funding::STATUS_FOLDER_CLOSED_TRANSFER,
+			Funding::STATUS_FOLDER_CLOSED_LESSOR
+		);
+
+		$statusfolder = isset($request_data['status_folder']) ? (int) $request_data['status_folder'] : 0;
+		if (!in_array($statusfolder, $allowed_status_folder)) {
+			throw new RestException(400, 'Invalid status_folder. Allowed values are: '.implode(', ', $allowed_status_folder));
+		}
+
+		$note = '';
+		if (isset($request_data['note']) && is_string($request_data['note'])) {
+			$note = sanitizeVal($request_data['note'], 'restricthtml');
+		}
+
+		$result = $this->funding->setEnd(DolibarrApiAccess::$user, $statusfolder, $note);
+		if ($result < 0) {
+			throw new RestException(500, $this->funding->error);
+		}
+
+		return array(
+			'success' => array(
+				'code' => 200,
+				'message' => 'Funding closed'
+			)
+		);
+	}
+
+	/**
 	 * Delete funding
 	 *
 	 * @param   int     $id   Funding ID
@@ -691,6 +825,61 @@ class FundingApi extends DolibarrApi
 				'message' => 'Funding deleted'
 			)
 		);
+	}
+
+
+	/**
+	 * Validate funding
+	 *
+	 * Validate a funding, conform to what is done on the web card page:
+	 * only a draft funding can be validated, and the payment mode of the
+	 * origin document must match the configured FUNDING_ID_REGLEMENT.
+	 *
+	 * @param   int     $id   Funding ID
+	 * @return  Object			Object after validation
+	 * @phan-return	Funding	Object after validation
+	 * @phpstan-return	Funding	Object after validation
+	 *
+	 * @throws RestException 403 Not allowed
+	 * @throws RestException 404 Not found
+	 * @throws RestException 409 Not in draft status / already validated
+	 * @throws RestException 500 System error
+	 *
+	 * @url	POST fundings/{id}/validate
+	 */
+	public function validateFunding($id)
+	{
+		if (!DolibarrApiAccess::$user->hasRight('funding', 'write')) {
+			throw new RestException(403);
+		}
+		if (!DolibarrApi::_checkAccessToResource('funding', $id, 'funding_funding')) {
+			throw new RestException(403, 'Access to instance id='.$id.' of object not allowed for login '.DolibarrApiAccess::$user->login);
+		}
+
+		$result = $this->funding->fetch($id);
+		if (!$result) {
+			throw new RestException(404, 'Funding not found');
+		}
+
+		if ($this->funding->status != Funding::STATUS_DRAFT) {
+			throw new RestException(409, 'Funding not in draft status, cannot be validated');
+		}
+
+		$result = $this->funding->validate(DolibarrApiAccess::$user);
+		if ($result < 0) {
+			global $langs;
+			$langs->load('funding@funding');
+			$error = $this->funding->error;
+			if (empty($error)) {
+				$error = $langs->trans('novalidreg');
+			}
+			throw new RestException(500, 'Error validating Funding : '.$error);
+		}
+		if ($result == 0) {
+			throw new RestException(409, 'Funding already validated');
+		}
+
+		return $this->getFunding($id);
 	}
 
 
