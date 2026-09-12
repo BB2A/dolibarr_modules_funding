@@ -1437,7 +1437,7 @@ class FundingApi extends DolibarrApi
 
 		// The request flag only exists for fundoc1-6 (funfoldoc1-6 have no check field)
 		$checkfield = $docfield.'check';
-		if (!isset($this->funding->$checkfield)) {
+		if (!property_exists($this->funding, $checkfield)) {
 			throw new RestException(400, 'Document field '.$docfield.' does not support a request flag');
 		}
 
@@ -1515,7 +1515,7 @@ class FundingApi extends DolibarrApi
 
 		// The request flag only exists for fundoc1-6 (funfoldoc1-6 have no check field)
 		$checkfield = $docfield.'check';
-		if (!isset($this->funding->$checkfield)) {
+		if (!property_exists($this->funding, $checkfield)) {
 			throw new RestException(400, 'Document field '.$docfield.' does not support a request flag');
 		}
 
