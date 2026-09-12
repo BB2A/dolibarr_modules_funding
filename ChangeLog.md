@@ -3,7 +3,7 @@
 ## [DEV] - 00/2026 Dolibarr 24
 - PHP min 8
 - Dolibarr min 18
-
+- NEW - API Ajout de la possibilité de marquer un document de financement comme demandé (POST/DELETE fundings/{id}/documents/{docfield}/request), sur le même principe que la case "filecheck" de funding_card.php, seulement lorsque le document correspondant n'est pas fourni
 
 
 ## [1.1.6] - 09/2026 Dolibarr 24
