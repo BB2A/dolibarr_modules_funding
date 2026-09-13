@@ -4,6 +4,7 @@ Historique des versions du module Funding. Source : `ChangeLog.md` à la racine 
 
 ## [DEV] — Dolibarr 24
 - PHP min 8, Dolibarr min 18.
+- NEW : API — endpoint `GET fundings/config` exposant `FUNDING_ID_REGLEMENT` et `FUNDING_VALIDITY_MONTH`.
 
 ## [1.1.6] — 09/2026, Dolibarr 24
 - NEW : gestion des variables de configuration `FUNDING_ID_REGLEMENT` et `FUNDING_VALIDITY_MONTH` dans le constructeur de `FundingApi`.

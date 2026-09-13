@@ -33,6 +33,7 @@ L'API gère trois objets : **Funding**, **Coefficient** et **Retention**, ainsi 
 | Méthode HTTP | Endpoint | Droit requis | Description |
 | --- | --- | --- | --- |
 | GET | `/fundings/statuslist` | `funding/read` | Liste des statuts de financement |
+| GET | `/fundings/config` | `funding/read` | Configuration du module (`funding_id_reglement`, `funding_validity_month`) |
 | GET | `/dictionary/scales/` | `funding/read` | Liste des échelles (`c_funding_scale`) |
 | GET | `/dictionary/durations/` | `funding/read` | Liste des durées (`c_funding_duration`) |
 | GET | `/dictionary/types/` | `funding/read` | Liste des types (`c_funding_type`) |
@@ -77,6 +78,14 @@ Le constructeur de `FundingApi` charge :
 
 - `FUNDING_ID_REGLEMENT` : mode de règlement « financement » (utilisé par la logique métier de l'API).
 - `FUNDING_VALIDITY_MONTH` : nombre de mois de validité (calcul de `date_endvalidity`).
+
+Ces valeurs sont également exposées en lecture via l'endpoint `GET /fundings/config` :
+
+```bash
+curl -H "DOLAPIKEY: <token>" \
+  "https://mon.dolibarr.tld/api/index.php/funding/fundings/config"
+# {"funding_id_reglement":4,"funding_validity_month":3}
+```
 
 ## Exemple
 

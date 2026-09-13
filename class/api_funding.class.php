@@ -56,6 +56,7 @@ class FundingApi extends DolibarrApi
 	 */
 	public $retention;
 	public $funding_id_reglement;
+	public $funding_validity_month;
 
 	/**
 	 * Constructor
@@ -966,6 +967,30 @@ class FundingApi extends DolibarrApi
 			$funding[$field] = $data[$field];
 		}
 		return $funding;
+	}
+
+	/**
+	 * Get funding module configuration
+	 *
+	 * Return the module configuration values exposed by the API:
+	 * FUNDING_ID_REGLEMENT (mode de règlement « financement ») and
+	 * FUNDING_VALIDITY_MONTH (nombre de mois de validité, calcul de date_endvalidity).
+	 *
+	 * @return  array                               Array with funding configuration
+	 * @throws RestException 403 Not allowed
+	 *
+	 * @url	GET fundings/config
+	 */
+	public function getFundingConfig()
+	{
+		if (!DolibarrApiAccess::$user->hasRight('funding', 'read')) {
+			throw new RestException(403);
+		}
+
+		return array(
+			'funding_id_reglement' => $this->funding_id_reglement,
+			'funding_validity_month' => $this->funding_validity_month,
+		);
 	}
 
 	/**
