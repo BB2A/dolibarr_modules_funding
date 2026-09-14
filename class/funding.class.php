@@ -2499,7 +2499,7 @@ class Funding extends CommonObject
 					$db->free($resql);
 					$this->fetch($this->id);
 					if ($resql) {
-						if (empty($this->fundoc1check) && empty($this->fundoc2check) && empty($this->fundoc3check) && empty($this->fundoc4check) && empty($this->fundoc5check) && $this->status_folder == $this::STATUS_FOLDER_LACK) {
+						if (empty($this->fundoc1check) && empty($this->fundoc2check) && empty($this->fundoc3check) && empty($this->fundoc4check) && empty($this->fundoc5check) && empty($this->fundoc6check) && $this->status_folder == $this::STATUS_FOLDER_LACK) {
 							$this->setStatusFolder($user, $this::STATUS_FOLDER_LACKOK);
 						}
 						$this->msg = 'FileAdding';
@@ -2734,7 +2734,7 @@ class Funding extends CommonObject
 				$db->free($resql);
 				if ($resql) {
 					$this->fetch($this->id);
-					if (empty($this->fundoc1check) && empty($this->fundoc2check) && empty($this->fundoc3check) && empty($this->fundoc4check) && empty($this->fundoc5check) && $this->status_folder == $this::STATUS_FOLDER_LACK) {
+					if (empty($this->fundoc1check) && empty($this->fundoc2check) && empty($this->fundoc3check) && empty($this->fundoc4check) && empty($this->fundoc5check) && empty($this->fundoc6check) && $this->status_folder == $this::STATUS_FOLDER_LACK) {
 						$this->setStatusFolder($user, $this::STATUS_FOLDER_LACKOK);
 					}
 					$this->message = 'FileAdded';
@@ -2796,7 +2796,7 @@ class Funding extends CommonObject
 				$db->free($resql);
 				if ($resql) {
 					$this->fetch($this->id);
-					if (empty($this->fundoc1check) && empty($this->fundoc2check) && empty($this->fundoc3check) && empty($this->fundoc4check) && empty($this->fundoc5check) && $this->status_folder == $this::STATUS_FOLDER_LACK) {
+					if (empty($this->fundoc1check) && empty($this->fundoc2check) && empty($this->fundoc3check) && empty($this->fundoc4check) && empty($this->fundoc5check) && empty($this->fundoc6check) && $this->status_folder == $this::STATUS_FOLDER_LACK) {
 						$this->setStatusFolder($user, $this::STATUS_FOLDER_LACKOK);
 					}
 					$this->message = 'FilesUnChecked';

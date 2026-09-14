@@ -1515,7 +1515,8 @@ class FundingApi extends DolibarrApi
 		$this->funding->fetch($id);
 		if (empty($this->funding->fundoc1check) && empty($this->funding->fundoc2check) &&
 			empty($this->funding->fundoc3check) && empty($this->funding->fundoc4check) &&
-			empty($this->funding->fundoc5check) && $this->funding->status_folder == $this->funding::STATUS_FOLDER_LACK) {
+			empty($this->funding->fundoc5check) && empty($this->funding->fundoc6check) &&
+			$this->funding->status_folder == $this->funding::STATUS_FOLDER_LACK) {
 			$this->funding->setStatusFolder($user, $this->funding::STATUS_FOLDER_LACKOK);
 		}
 
@@ -1873,7 +1874,8 @@ class FundingApi extends DolibarrApi
 		// If no more requested document, restore STATUS_FOLDER_LACKOK when status was LACK
 		if (empty($this->funding->fundoc1check) && empty($this->funding->fundoc2check) &&
 			empty($this->funding->fundoc3check) && empty($this->funding->fundoc4check) &&
-			empty($this->funding->fundoc5check) && $this->funding->status_folder == $this->funding::STATUS_FOLDER_LACK) {
+			empty($this->funding->fundoc5check) && empty($this->funding->fundoc6check) &&
+			$this->funding->status_folder == $this->funding::STATUS_FOLDER_LACK) {
 			$this->funding->setStatusFolder(DolibarrApiAccess::$user, $this->funding::STATUS_FOLDER_LACKOK);
 		}
 
