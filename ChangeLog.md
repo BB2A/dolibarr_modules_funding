@@ -4,6 +4,11 @@
 - PHP min 8
 - Dolibarr min 18
 
+- NEW - 14/09/2026 - Ajout des constantes NB_FUNDOC et NB_FUNFOLDOC dans la classe Funding pilotant le nombre de champs document (fundoc/funfoldoc)
+- NEW - 14/09/2026 - Généralisation en boucles des énumérations manuelles fundoc1..6 / funfoldoc1..6 dans la classe, l'API et la fiche (funding_card.php), bornées par les constantes
+- FIX - 14/09/2026 - createFromClone omettait fundoc6 dans la copie des documents ; le 6e document n'était pas copié lors d'un clonage
+- FIX - 14/09/2026 - fundoc6check était oublié dans les tests de restauration du statut LACK -> LACKOK (postFundingDocument, deleteFundingDocumentRequest et équivalents funding.class.php) ; le dossier restait bloqué en « pièce manquante »
+
 
 ## [1.1.6] - 09/2026 Dolibarr 24
 - PHP min 8
