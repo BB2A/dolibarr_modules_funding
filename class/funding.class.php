@@ -756,19 +756,11 @@ class Funding extends CommonObject
 
 			$dirsource = $conf->funding->multidir_output[$object->entity ? $object->entity : $conf->entity]."/".dol_sanitizeFileName($oldref).'/';
 			$dirdest = $conf->funding->multidir_output[$object->entity ? $object->entity : $conf->entity]."/".dol_sanitizeFileName($newref).'/';
-			$filesmove = array(
-			'fundoc1'=>$object->fundoc1,
-			'fundoc2'=>$object->fundoc2,
-			'fundoc3'=>$object->fundoc3,
-			'fundoc4'=>$object->fundoc4,
-			'fundoc5'=>$object->fundoc5,
-			'funfoldoc1'=>$object->funfoldoc1,
-			'funfoldoc2'=>$object->funfoldoc2,
-			'funfoldoc3'=>$object->funfoldoc3,
-			'funfoldoc4'=>$object->funfoldoc4,
-			'funfoldoc5'=>$object->funfoldoc5,
-			'funfoldoc6'=>$object->funfoldoc6
-			);
+			$filesmove = array();
+			for ($i = 1; $i <= 6; $i++) {
+				$filesmove['fundoc'.$i] = $object->{'fundoc'.$i};
+				$filesmove['funfoldoc'.$i] = $object->{'funfoldoc'.$i};
+			}
 
 			if (!(is_dir($dirdest))) {
 				$result = dol_mkdir($dirdest);
