@@ -98,6 +98,10 @@ class Funding extends CommonObject
 	const STATUS_FOLDER_CLOSED_TRANSFER = 22;
 	const STATUS_FOLDER_CLOSED_LESSOR = 23;
 
+	// Number of document fields (fundoc1..NB_FUNDOC / funfoldoc1..NB_FUNFOLDOC)
+	const NB_FUNDOC = 6;
+	const NB_FUNFOLDOC = 6;
+
 
 	/**
 	 *  'type' field format:
@@ -756,19 +760,13 @@ class Funding extends CommonObject
 
 			$dirsource = $conf->funding->multidir_output[$object->entity ? $object->entity : $conf->entity]."/".dol_sanitizeFileName($oldref).'/';
 			$dirdest = $conf->funding->multidir_output[$object->entity ? $object->entity : $conf->entity]."/".dol_sanitizeFileName($newref).'/';
-			$filesmove = array(
-			'fundoc1'=>$object->fundoc1,
-			'fundoc2'=>$object->fundoc2,
-			'fundoc3'=>$object->fundoc3,
-			'fundoc4'=>$object->fundoc4,
-			'fundoc5'=>$object->fundoc5,
-			'funfoldoc1'=>$object->funfoldoc1,
-			'funfoldoc2'=>$object->funfoldoc2,
-			'funfoldoc3'=>$object->funfoldoc3,
-			'funfoldoc4'=>$object->funfoldoc4,
-			'funfoldoc5'=>$object->funfoldoc5,
-			'funfoldoc6'=>$object->funfoldoc6
-			);
+			$filesmove = array();
+			for ($i = 1; $i <= $this::NB_FUNDOC; $i++) {
+				$filesmove['fundoc'.$i] = $object->{'fundoc'.$i};
+			}
+			for ($i = 1; $i <= $this::NB_FUNFOLDOC; $i++) {
+				$filesmove['funfoldoc'.$i] = $object->{'funfoldoc'.$i};
+			}
 
 			if (!(is_dir($dirdest))) {
 				$result = dol_mkdir($dirdest);
@@ -2500,7 +2498,7 @@ class Funding extends CommonObject
 					$this->fetch($this->id);
 					if ($resql) {
 						$allcheckcleared = true;
-						for ($i = 1; $i <= 6; $i++) {
+						for ($i = 1; $i <= $this::NB_FUNDOC; $i++) {
 							if (!empty($this->{'fundoc'.$i.'check'})) {
 								$allcheckcleared = false;
 								break;
@@ -2742,7 +2740,7 @@ class Funding extends CommonObject
 				if ($resql) {
 					$this->fetch($this->id);
 					$allcheckcleared = true;
-					for ($i = 1; $i <= 6; $i++) {
+					for ($i = 1; $i <= $this::NB_FUNDOC; $i++) {
 						if (!empty($this->{'fundoc'.$i.'check'})) {
 							$allcheckcleared = false;
 							break;
@@ -2811,7 +2809,7 @@ class Funding extends CommonObject
 				if ($resql) {
 					$this->fetch($this->id);
 					$allcheckcleared = true;
-					for ($i = 1; $i <= 6; $i++) {
+					for ($i = 1; $i <= $this::NB_FUNDOC; $i++) {
 						if (!empty($this->{'fundoc'.$i.'check'})) {
 							$allcheckcleared = false;
 							break;
