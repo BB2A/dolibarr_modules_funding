@@ -792,7 +792,7 @@ if ($object->id > 0 && $permissiontoread && (empty($action) || ($action != 'edit
 	print '</tr>';
 
 	$i = 1;
-	while ($i <= 6) {
+	while ($i <= $object::NB_FUNDOC) {
 		print '<tr class="">';
 		print '<td>'.$form->editfieldkey('fundoc'.$i, 'fundoc'.$i, '', $object, 0).'</td>';
 		if ($permissiontoadd && empty($object->{'fundoc'.$i})) {
@@ -826,7 +826,7 @@ if ($object->id > 0 && $permissiontoread && (empty($action) || ($action != 'edit
 	print '</tr>';
 
 	$i = 1;
-	while ($i <= 6) {
+	while ($i <= $object::NB_FUNFOLDOC) {
 		print '<tr class="">';
 		print '<td>'.$form->editfieldkey('funfoldoc'.$i, 'funfoldoc'.$i, '', $object, 0).'</td>';
 		if ($permissiontoadd && empty($object->{'funfoldoc'.$i})) {
