@@ -988,6 +988,62 @@ class FundingApi extends DolibarrApi
 
 
 	/**
+	 * Run a funding (passer en actif / STATUS_RUNNING)
+	 *
+	 * Same conditions as the "BtnRunning" / run action in funding_card.php:
+	 * requires the funding:write right, the funding must not come from a
+	 * proposal (origin <> 'propal') and its status must be STATUS_ACCEPT. The
+	 * funding is then put to STATUS_RUNNING through setRun (which also checks
+	 * that the origin document is validated and that the signature date is
+	 * set), triggering FUNDING_RUNNING.
+	 *
+	 * @param   int     $id   Funding ID
+	 * @return  Object			Object after running
+	 * @phan-return	Funding	Object after running
+	 * @phpstan-return	Funding	Object after running
+	 *
+	 * @throws RestException 403 Not allowed
+	 * @throws RestException 404 Not found
+	 * @throws RestException 409 Nothing to do
+	 * @throws RestException 500 System error
+	 *
+	 * @url	POST fundings/{id}/run
+	 */
+	public function postFundingRun($id)
+	{
+		if (!DolibarrApiAccess::$user->hasRight('funding', 'write')) {
+			throw new RestException(403);
+		}
+		if (!DolibarrApi::_checkAccessToResource('funding', $id, 'funding_funding')) {
+			throw new RestException(403, 'Access to instance id='.$id.' of object not allowed for login '.DolibarrApiAccess::$user->login);
+		}
+
+		$result = $this->funding->fetch($id);
+		if (!$result) {
+			throw new RestException(404, 'Funding not found');
+		}
+
+		// Same conditions as the BtnRunning button in funding_card.php
+		if ($this->funding->origin == 'propal') {
+			throw new RestException(409, 'Funding coming from a proposal cannot be set to running');
+		}
+		if ($this->funding->status != Funding::STATUS_ACCEPT) {
+			throw new RestException(409, 'Funding is not in accept status, cannot be set to running');
+		}
+
+		$result = $this->funding->setRun(DolibarrApiAccess::$user);
+		if ($result < 0) {
+			throw new RestException(500, 'Error running Funding : '.$this->funding->error);
+		}
+		if ($result == 0) {
+			throw new RestException(409, 'Funding already running');
+		}
+
+		return $this->getFunding($id);
+	}
+
+
+	/**
 	 * Validate fields before creating or updating object
 	 *
 	 * @param	array		$data   Array of data to validate
