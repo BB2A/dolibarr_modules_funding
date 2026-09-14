@@ -940,6 +940,54 @@ class FundingApi extends DolibarrApi
 
 
 	/**
+	 * Set a funding back to draft (retour en brouillon)
+	 *
+	 * Same conditions as the "SetToDraft" / confirm_setdraft action in
+	 * funding_card.php: requires the funding:manage right, the funding must
+	 * be validated or in a higher status (status >= STATUS_VALIDATED). The
+	 * status_folder is then reset to NULL through setStatusFolder.
+	 *
+	 * @param   int     $id   Funding ID
+	 * @return  Object			Object after reset
+	 * @phan-return	Funding	Object after reset
+	 * @phpstan-return	Funding	Object after reset
+	 *
+	 * @throws RestException 403 Not allowed
+	 * @throws RestException 404 Not found
+	 * @throws RestException 409 Nothing to do
+	 * @throws RestException 500 System error
+	 *
+	 * @url	POST fundings/{id}/setdraft
+	 */
+	public function postFundingSetDraft($id)
+	{
+		if (!DolibarrApiAccess::$user->hasRight('funding', 'manage')) {
+			throw new RestException(403);
+		}
+		if (!DolibarrApi::_checkAccessToResource('funding', $id, 'funding_funding')) {
+			throw new RestException(403, 'Access to instance id='.$id.' of object not allowed for login '.DolibarrApiAccess::$user->login);
+		}
+
+		$result = $this->funding->fetch($id);
+		if (!$result) {
+			throw new RestException(404, 'Funding not found');
+		}
+
+		// Same condition as the SetToDraft button in funding_card.php
+		if ($this->funding->status < Funding::STATUS_VALIDATED) {
+			throw new RestException(409, 'Funding is not validated, cannot be set back to draft');
+		}
+
+		$result = $this->funding->setStatusFolder(DolibarrApiAccess::$user, 'NULL');
+		if ($result < 0) {
+			throw new RestException(500, 'Error setting Funding back to draft : '.$this->funding->error);
+		}
+
+		return $this->getFunding($id);
+	}
+
+
+	/**
 	 * Validate fields before creating or updating object
 	 *
 	 * @param	array		$data   Array of data to validate
