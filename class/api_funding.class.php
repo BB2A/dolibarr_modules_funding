@@ -1402,7 +1402,11 @@ class FundingApi extends DolibarrApi
 		}
 
 		// Validate docfield parameter - only allow fundoc1-6 and funfoldoc1-6
-		$allowed_docfields = array('fundoc1', 'fundoc2', 'fundoc3', 'fundoc4', 'fundoc5', 'fundoc6', 'funfoldoc1', 'funfoldoc2', 'funfoldoc3', 'funfoldoc4', 'funfoldoc5', 'funfoldoc6');
+		$allowed_docfields = array();
+		for ($i = 1; $i <= 6; $i++) {
+			$allowed_docfields[] = 'fundoc'.$i;
+			$allowed_docfields[] = 'funfoldoc'.$i;
+		}
 		if (!in_array($docfield, $allowed_docfields)) {
 			throw new RestException(400, 'Invalid document field. Allowed fields are: '.implode(', ', $allowed_docfields));
 		}
@@ -1579,7 +1583,11 @@ class FundingApi extends DolibarrApi
 		$class = 'funding';
 		$upload_dir = $conf->$module->multidir_output[$conf->entity].'/'.$class.'/'.dol_sanitizeFileName($this->funding->ref);
 
-		$allowed_docfields = array('fundoc1', 'fundoc2', 'fundoc3', 'fundoc4', 'fundoc5', 'fundoc6', 'funfoldoc1', 'funfoldoc2', 'funfoldoc3', 'funfoldoc4', 'funfoldoc5', 'funfoldoc6');
+		$allowed_docfields = array();
+		for ($i = 1; $i <= 6; $i++) {
+			$allowed_docfields[] = 'fundoc'.$i;
+			$allowed_docfields[] = 'funfoldoc'.$i;
+		}
 
 		// If docfield is empty, return all documents
 		if (empty($docfield)) {
@@ -1682,7 +1690,11 @@ class FundingApi extends DolibarrApi
 		}
 
 		// Validate docfield parameter
-		$allowed_docfields = array('fundoc1', 'fundoc2', 'fundoc3', 'fundoc4', 'fundoc5', 'fundoc6', 'funfoldoc1', 'funfoldoc2', 'funfoldoc3', 'funfoldoc4', 'funfoldoc5', 'funfoldoc6');
+		$allowed_docfields = array();
+		for ($i = 1; $i <= 6; $i++) {
+			$allowed_docfields[] = 'fundoc'.$i;
+			$allowed_docfields[] = 'funfoldoc'.$i;
+		}
 		if (!in_array($docfield, $allowed_docfields)) {
 			throw new RestException(400, 'Invalid document field. Allowed fields are: '.implode(', ', $allowed_docfields));
 		}
@@ -1772,7 +1784,11 @@ class FundingApi extends DolibarrApi
 		}
 
 		// Validate docfield parameter - only allow fundoc1-6 and funfoldoc1-6
-		$allowed_docfields = array('fundoc1', 'fundoc2', 'fundoc3', 'fundoc4', 'fundoc5', 'fundoc6', 'funfoldoc1', 'funfoldoc2', 'funfoldoc3', 'funfoldoc4', 'funfoldoc5', 'funfoldoc6');
+		$allowed_docfields = array();
+		for ($i = 1; $i <= 6; $i++) {
+			$allowed_docfields[] = 'fundoc'.$i;
+			$allowed_docfields[] = 'funfoldoc'.$i;
+		}
 		if (!in_array($docfield, $allowed_docfields)) {
 			throw new RestException(400, 'Invalid document field. Allowed fields are: '.implode(', ', $allowed_docfields));
 		}
@@ -1850,7 +1866,11 @@ class FundingApi extends DolibarrApi
 		}
 
 		// Validate docfield parameter - only allow fundoc1-6 and funfoldoc1-6
-		$allowed_docfields = array('fundoc1', 'fundoc2', 'fundoc3', 'fundoc4', 'fundoc5', 'fundoc6', 'funfoldoc1', 'funfoldoc2', 'funfoldoc3', 'funfoldoc4', 'funfoldoc5', 'funfoldoc6');
+		$allowed_docfields = array();
+		for ($i = 1; $i <= 6; $i++) {
+			$allowed_docfields[] = 'fundoc'.$i;
+			$allowed_docfields[] = 'funfoldoc'.$i;
+		}
 		if (!in_array($docfield, $allowed_docfields)) {
 			throw new RestException(400, 'Invalid document field. Allowed fields are: '.implode(', ', $allowed_docfields));
 		}
