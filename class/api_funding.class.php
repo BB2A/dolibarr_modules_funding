@@ -2034,6 +2034,76 @@ class FundingApi extends DolibarrApi
 	}
 
 
+	/**
+	 * Search documents in other funding records for the third party (recherche de documents)
+	 *
+	 * Same behaviour as the "searchdoc" action in funding_card.php: it calls
+	 * searchDoc to look, for each fundoc1-4 field empty on the current funding,
+	 * for a document of the same field in another funding of the same third
+	 * party, copies it into the current funding directory with the expected
+	 * output name and updates the database field. If no more requested document
+	 * remains, the folder status is restored to STATUS_FOLDER_LACKOK when it
+	 * was STATUS_FOLDER_LACK.
+	 *
+	 * @param int $id ID of funding
+	 * @return array
+	 * @phan-return array<string,mixed>
+	 * @phpstan-return array<string,mixed>
+	 *
+	 * @throws RestException 403 Not allowed
+	 * @throws RestException 404 Not found
+	 * @throws RestException 500 System error
+	 *
+	 * @url POST fundings/{id}/documents/search
+	 */
+	public function postFundingDocumentsSearch($id)
+	{
+		global $conf, $langs;
+
+		if (!DolibarrApiAccess::$user->hasRight('funding', 'write')) {
+			throw new RestException(403);
+		}
+		if (!DolibarrApiAccess::_checkAccessToResource('funding', $id, 'funding_funding')) {
+			throw new RestException(403, 'Access to instance id='.$id.' of object not allowed for login '.DolibarrApiAccess::$user->login);
+		}
+
+		$result = $this->funding->fetch($id);
+		if (!$result) {
+			throw new RestException(404, 'Funding not found');
+		}
+
+		$langs->load('funding@funding');
+
+		// Same upload dir as the searchdoc action in funding_card.php
+		$upload_dir = $conf->funding->multidir_output[isset($this->funding->entity) ? $this->funding->entity : 1];
+
+		$result = $this->funding->searchDoc(DolibarrApiAccess::$user, $upload_dir);
+		if ($result < 0) {
+			throw new RestException(500, 'Error searching documents: '.($this->funding->error ? $this->funding->error : implode(', ', $this->funding->errors)));
+		}
+
+		$this->funding->fetch($id);
+
+		// List documents found and copied for the response
+		$documents = array();
+		for ($i = 1; $i <= Funding::NB_FUNDOC; $i++) {
+			$field = 'fundoc'.$i;
+			if (!empty($this->funding->$field)) {
+				$documents[$field] = $this->funding->$field;
+			}
+		}
+
+		return array(
+			'success' => array(
+				'code' => 200,
+				'message' => $langs->trans($this->funding->msg ? $this->funding->msg : 'FilesAdded'),
+				'documents' => $documents,
+				'status_folder' => $this->funding->status_folder
+			)
+		);
+	}
+
+
 	/* BEGIN MODULEBUILDER API RETENTION */
 	/**
 	 * Get properties of a retention object
