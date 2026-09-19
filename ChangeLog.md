@@ -4,6 +4,7 @@
 - PHP min 8
 - Dolibarr min 18
 
+- NEW - 15/09/2026 - API Ajout de la recherche de documents dans les autres financements du tiers via POST fundings/{id}/documents/search, reproduisant l'action "searchdoc" de funding_card.php (appel de searchDoc : copie des documents fundoc1..4 trouvés dans un autre financement du même tiers, mise à jour du champ en base et restauration du statut LACK -> LACKOK si toutes les pièces demandées sont fournies)
 
 
 ## [1.1.7] - 09/2026 Dolibarr 24
