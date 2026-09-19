@@ -4,13 +4,13 @@
 - PHP min 8
 - Dolibarr min 18
 
-- NEW - 15/09/2026 - API Ajout de la recherche de documents dans les autres financements du tiers via POST fundings/{id}/documents/search, reproduisant l'action "searchdoc" de funding_card.php (appel de searchDoc : copie des documents fundoc1..4 trouvés dans un autre financement du même tiers, mise à jour du champ en base et restauration du statut LACK -> LACKOK si toutes les pièces demandées sont fournies)
 
 
 ## [1.1.7] - 09/2026 Dolibarr 24
 - PHP min 8
 - Dolibarr min 18
 
+- NEW - 15/09/2026 - API Ajout de la recherche de documents dans les autres financements du tiers via POST fundings/{id}/documents/search, reproduisant l'action "searchdoc" de funding_card.php (appel de searchDoc : copie des documents fundoc1..4 trouvés dans un autre financement du même tiers, mise à jour du champ en base et restauration du statut LACK -> LACKOK si toutes les pièces demandées sont fournies)
 - NEW - 14/09/2026 - Ajout des constantes NB_FUNDOC et NB_FUNFOLDOC dans la classe Funding pilotant le nombre de champs document (fundoc/funfoldoc)
 - NEW - 14/09/2026 - Généralisation en boucles des énumérations manuelles fundoc1..6 / funfoldoc1..6 dans la classe, l'API et la fiche (funding_card.php), bornées par les constantes
 - FIX - 14/09/2026 - createFromClone omettait fundoc6 dans la copie des documents ; le 6e document n'était pas copié lors d'un clonage
