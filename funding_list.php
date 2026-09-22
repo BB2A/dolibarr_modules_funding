@@ -78,6 +78,7 @@ if (!$res) {
 }
 
 require_once DOL_DOCUMENT_ROOT.'/core/class/html.formcompany.class.php';
+require_once DOL_DOCUMENT_ROOT.'/core/class/html.formfile.class.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/date.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/company.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/files.lib.php';
@@ -569,6 +570,7 @@ if (empty($reshook)) {
  */
 
 $form = new Form($db);
+$formfile = new FormFile($db);
 
 $now = dol_now();
 
@@ -1120,6 +1122,11 @@ while ($i < ($limit ? min($num, $limit) : $num)) {
 				}
 			} elseif ($key == 'rowid') {
 				print $object->showOutputField($val, $key, $object->id, '');
+			} elseif ($key == 'ref') {
+				print $object->getNomUrl(1, '', 0, '', 1, 3);
+				$filename = dol_sanitizeFileName($object->ref);
+				$filedir = $conf->funding->multidir_output[$object->entity ? $object->entity : $conf->entity].'/'.dol_sanitizeFileName($object->ref);
+				print $formfile->getDocumentsLink('funding', $filename, $filedir);
 			} else {
 				print $object->showOutputField($val, $key, $object->$key, '');
 			}
