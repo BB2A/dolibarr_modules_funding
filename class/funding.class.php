@@ -1932,11 +1932,12 @@ class Funding extends CommonObject
 	 *  @param  int     $notooltip                  1=Disable tooltip
 	 *  @param  string  $morecss                    Add more css on link
 	 *  @param  int     $save_lastsearch_value      -1=Auto, 0=No save of lastsearch_values when clicking, 1=Save lastsearch_values whenclicking
+	 *  @param  int     $addlinktonotes             1=Add link to notes with picto, 2=Show public note, 3=Show both notes
 	 *  @return string                              String with URL
 	 */
-	public function getNomUrl($withpicto = 0, $option = '', $notooltip = 0, $morecss = '', $save_lastsearch_value = -1)
+	public function getNomUrl($withpicto = 0, $option = '', $notooltip = 0, $morecss = '', $save_lastsearch_value = -1, $addlinktonotes = 0)
 	{
-		global $conf, $langs, $hookmanager;
+		global $conf, $langs, $user, $hookmanager;
 
 		if (!empty($conf->dol_no_mouse_hover)) {
 			$notooltip = 1; // Force disable tooltips
@@ -2020,6 +2021,29 @@ class Funding extends CommonObject
 
 		$result .= $linkend;
 		//if ($withpicto != 2) $result.=(($addlabel && $this->label) ? $sep . dol_trunc($this->label, ($addlabel > 1 ? $addlabel : 0)) : '');
+		if ($addlinktonotes) {
+			$txttoshow = '';
+			if ($addlinktonotes == 1) {
+				$txttoshow = $user->socid > 0 ? $this->note_public : $this->note_private;
+			} elseif ($addlinktonotes == 2) {
+				$txttoshow = $this->note_public;
+			} elseif ($addlinktonotes == 3) {
+				if (!empty($this->note_public)) {
+					$txttoshow .= dol_string_nohtmltag($this->note_public, 1);
+				}
+				if (empty($user->socid) && !empty($this->note_private)) {
+					$txttoshow .= ($txttoshow ? '<br><br>' : '').dol_string_nohtmltag($this->note_private, 1);
+				}
+			}
+			if ($txttoshow) {
+				$notetoshow = $langs->trans("ViewPrivateNote").':<br>'.dol_string_nohtmltag($txttoshow, 1);
+				$result .= ' <span class="note inline-block">';
+				$result .= '<a href="'.DOL_URL_ROOT.'/funding/funding_card.php?id='.$this->id.'" class="classfortooltip" title="'.dol_escape_htmltag($notetoshow).'">';
+				$result .= img_picto('', 'note');
+				$result .= '</a>';
+				$result .= '</span>';
+			}
+		}
 
 		global $action, $hookmanager;
 		$hookmanager->initHooks(array('fundingdao'));

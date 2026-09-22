@@ -3,6 +3,8 @@
 ## [DEV] - 00/2026 Dolibarr 24
 - PHP min 8
 - Dolibarr min 18
+- NEW - 22/09/2026 - Liste des financements : à côté de la référence, picto permettant d'afficher les notes (publique/privée) dans une infobulle, comme sur les listes commandes/devis
+- NEW - 22/09/2026 - Liste des financements : à côté de la référence, menu de téléchargement des documents (PDF généré) du financement via getDocumentsLink, comme sur les listes commandes/devis
 
 
 
