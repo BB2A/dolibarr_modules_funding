@@ -743,23 +743,6 @@ class pdf_standard_funding extends ModelePDFFunding
 					$bottomlasttab = $this->page_hauteur - $heightforinfotot - $heightforfreetext - $heightforfooter + 1;
 				}
 
-				// Display private note (internal) after details and before attached files
-				if (!empty($object->note_private)) {
-					$pdf->SetFont('', 'B', $default_font_size);
-					$pdf->SetXY($this->marge_gauche, $bottomlasttab + 5);
-					$pdf->MultiCell(0, 5, $outputlangs->transnoentities("PrivateNote"), 0, 'L');
-					$pdf->SetFont('', '', $default_font_size - 1);
-
-					$substitutionarray = pdf_getSubstitutionArray($outputlangs, null, $object);
-					complete_substitutions_array($substitutionarray, $outputlangs, $object);
-					$notetoprint = make_substitutions($object->note_private, $substitutionarray, $outputlangs);
-					$notetoprint = convertBackOfficeMediasLinksToPublicLinks($notetoprint);
-					$notetoprint = dol_nl2br($notetoprint);
-
-					$pdf->writeHTMLCell(0, 3, $this->marge_gauche, $bottomlasttab + 10, $outputlangs->convToOutputCharset($notetoprint), 0, 1);
-					$bottomlasttab = $pdf->GetY();
-				}
-
 				// Display infos area
 				//$posy = $this->drawInfoTable($pdf, $object, $bottomlasttab, $outputlangs);
 
@@ -995,6 +978,24 @@ class pdf_standard_funding extends ModelePDFFunding
 			// Visual separator
 			$pdf->line($this->marge_gauche, $posy, $this->page_largeur - $this->marge_droite, $posy);
 			$posy += 5;
+
+			// Display private note (internal) before funding documents
+			if (!empty($object->note_private)) {
+				$substitutionarray = pdf_getSubstitutionArray($outputlangs, null, $object);
+				complete_substitutions_array($substitutionarray, $outputlangs, $object);
+				$notetoprint = make_substitutions($object->note_private, $substitutionarray, $outputlangs);
+				$notetoprint = convertBackOfficeMediasLinksToPublicLinks($notetoprint);
+				$notetoprint = dol_nl2br($notetoprint);
+
+				$pdf->SetFont('', 'B', $default_font_size);
+				$pdf->SetXY($this->marge_gauche, $posy);
+				$pdf->MultiCell(0, 5, $outputlangs->transnoentities("PrivateNote"), 0, 'L');
+				$pdf->SetFont('', '', $default_font_size - 1);
+				$posy += 7;
+				$pdf->SetXY($this->marge_gauche, $posy);
+				$pdf->writeHTMLCell(0, 3, $this->marge_gauche, $posy, $outputlangs->convToOutputCharset($notetoprint), 0, 1);
+				$posy = $pdf->GetY() + 3;
+			}
 
 			// fundoc documents
 			$has_doc = false;
