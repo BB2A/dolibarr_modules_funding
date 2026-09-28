@@ -103,6 +103,11 @@ Checked=Pointé
 FunCheck=Pointer
 FunUnCheck=Dépointer
 NoFolderFunding=Financement introuvable
+FundingInformation=Informations de financement
+FundingDocuments=Documents de financement
+FundingFolderDocuments=Documents du dossier de financement
+Fundoc=Document de financement
+Funfoldoc=Document du dossier
 
 
 Accepted=Accepté

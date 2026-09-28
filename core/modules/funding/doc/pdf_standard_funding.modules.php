@@ -9,6 +9,7 @@
  * Copyright (C) 2015       Marcos García           <marcosgdf@gmail.com>
  * Copyright (C) 2017       Ferran Marcet           <fmarcet@2byte.es>
  * Copyright (C) 2018       Frédéric France         <frederic.france@netlogic.fr>
+ * Copyright (C) 2026       Anthony Berton			<anthony.berton@bb2a.fr>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -146,7 +147,7 @@ class pdf_standard_funding extends ModelePDFFunding
 		$langs->loadLangs(array("main", "bills"));
 
 		$this->db = $db;
-		$this->name = "standard";
+		$this->name = "Funding";
 		$this->description = $langs->trans('PDFStandardDescription');
 		$this->update_main_doc_field = 1; // Save the name of generated file as the main doc when generating a doc with this template
 
@@ -730,6 +731,9 @@ class pdf_standard_funding extends ModelePDFFunding
 				// 	}
 				// }
 
+				// Store object for use in _tableau
+				$this->object = $object;
+
 				// Show square
 				if ($pagenb == $pageposbeforeprintlines) {
 					$this->_tableau($pdf, $tab_top, $this->page_hauteur - $tab_top - $heightforinfotot - $heightforfreetext - $heightforfooter, 0, $outputlangs, $hidetop, 0, isset($object->multicurrency_code) ? $object->multicurrency_code : '', $outputlangsbis);
@@ -756,6 +760,41 @@ class pdf_standard_funding extends ModelePDFFunding
 				// Pagefoot
 				$this->_pagefoot($pdf, $object, $outputlangs);
 				if (method_exists($pdf, 'AliasNbPages')) $pdf->AliasNbPages();
+
+				// Include funfoldoc and fundoc PDF documents in order: funfoldoc first, then fundoc
+				$upload_dir = $conf->funding->multidir_output[$object->entity ? $object->entity : $conf->entity].'/'.dol_sanitizeFileName($object->ref);
+
+				// Add funfoldoc documents (1 to 5) first
+				for ($i = 1; $i <= 5; $i++) {
+					$doc_field = 'funfoldoc'.$i;
+					if (!empty($object->$doc_field)) {
+						$doc_path = $upload_dir.'/'.$object->$doc_field;
+						if (file_exists($doc_path) && preg_match('/\.pdf$/i', $doc_path)) {
+							$pagecount = $pdf->setSourceFile($doc_path);
+							for ($p = 1; $p <= $pagecount; $p++) {
+								$tplidx = $pdf->importPage($p);
+								$pdf->AddPage();
+								$pdf->useTemplate($tplidx);
+							}
+						}
+					}
+				}
+
+				// Add fundoc documents (1 to 5) after funfoldoc
+				for ($i = 1; $i <= 5; $i++) {
+					$doc_field = 'fundoc'.$i;
+					if (!empty($object->$doc_field)) {
+						$doc_path = $upload_dir.'/'.$object->$doc_field;
+						if (file_exists($doc_path) && preg_match('/\.pdf$/i', $doc_path)) {
+							$pagecount = $pdf->setSourceFile($doc_path);
+							for ($p = 1; $p <= $pagecount; $p++) {
+								$tplidx = $pdf->importPage($p);
+								$pdf->AddPage();
+								$pdf->useTemplate($tplidx);
+							}
+						}
+					}
+				}
 
 				$pdf->Close();
 
@@ -820,43 +859,172 @@ class pdf_standard_funding extends ModelePDFFunding
 	{
 		global $conf;
 
-		// Force to disable hidetop and hidebottom
 		$hidebottom = 0;
 		if ($hidetop) $hidetop = -1;
 
 		$currency = !empty($currency) ? $currency : $conf->currency;
 		$default_font_size = pdf_getPDFFontSize($outputlangs);
 
-		// Amount in (at tab_top - 1)
 		$pdf->SetTextColor(0, 0, 0);
-		$pdf->SetFont('', '', $default_font_size - 2);
-
-		if (empty($hidetop)) {
-			$titre = $outputlangs->transnoentities("AmountInCurrency", $outputlangs->transnoentitiesnoconv("Currency".$currency));
-			if (!empty($conf->global->PDF_USE_ALSO_LANGUAGE_CODE) && is_object($outputlangsbis)) {
-				$titre .= ' - '.$outputlangsbis->transnoentities("AmountInCurrency", $outputlangsbis->transnoentitiesnoconv("Currency".$currency));
-			}
-
-			$pdf->SetXY($this->page_largeur - $this->marge_droite - ($pdf->GetStringWidth($titre) + 3), $tab_top - 4);
-			$pdf->MultiCell(($pdf->GetStringWidth($titre) + 3), 2, $titre);
-
-			//$conf->global->MAIN_PDF_TITLE_BACKGROUND_COLOR='230,230,230';
-			if (!empty($conf->global->MAIN_PDF_TITLE_BACKGROUND_COLOR)) {
-				$pdf->Rect($this->marge_gauche, $tab_top, $this->page_largeur - $this->marge_droite - $this->marge_gauche, $this->tabTitleHeight, 'F', null, explode(',', $conf->global->MAIN_PDF_TITLE_BACKGROUND_COLOR));
-			}
-		}
-
-		$pdf->SetDrawColor(128, 128, 128);
 		$pdf->SetFont('', '', $default_font_size - 1);
 
-		// Output Rect
-		$this->printRect($pdf, $this->marge_gauche, $tab_top, $this->page_largeur - $this->marge_gauche - $this->marge_droite, $tab_height, $hidetop, $hidebottom); // Rect takes a length in 3rd parameter and 4th parameter
+		if (!empty($this->object)) {
+			$object = $this->object;
+			$posy = $tab_top + 5;
+			$pdf->SetDrawColor(128, 128, 128);
 
+			// Title
+			$pdf->SetFont('', 'B', $default_font_size + 2);
+			$pdf->SetXY($this->marge_gauche, $posy);
+			$pdf->MultiCell(0, 6, $outputlangs->transnoentities("FundingInformation"), 0, 'L');
+			$posy += 8;
 
-		$this->pdfTabTitles($pdf, $tab_top, $tab_height, $outputlangs, $hidetop);
+			$pdf->SetFont('', '', $default_font_size - 1);
+			$col_width = ($this->page_largeur - $this->marge_gauche - $this->marge_droite) / 2;
 
-		if (empty($hidetop)) {
-			$pdf->line($this->marge_gauche, $tab_top + $this->tabTitleHeight, $this->page_largeur - $this->marge_droite, $tab_top + $this->tabTitleHeight); // line takes a position y in 2nd parameter and 4th parameter
+			// Line 1: Study Number + Folder Number
+			$pdf->SetXY($this->marge_gauche, $posy);
+			$pdf->MultiCell($col_width, 5, $outputlangs->transnoentities("StudyNumber").": ".dol_htmlentitiesbr($object->study_number), 0, 'L');
+
+			$pdf->SetXY($this->marge_gauche + $col_width + 5, $posy);
+			$pdf->MultiCell($col_width, 5, $outputlangs->transnoentities("FolderNumber").": ".dol_htmlentitiesbr($object->folder_number), 0, 'L');
+			$posy += 7;
+
+			// Line 2: Date Accepted + Date Validity
+			$pdf->SetXY($this->marge_gauche, $posy);
+			$pdf->MultiCell($col_width, 5, $outputlangs->transnoentities("DateAccepted").": ".dol_print_date($object->date_accepted, "day", false, $outputlangs), 0, 'L');
+
+			$pdf->SetXY($this->marge_gauche + $col_width + 5, $posy);
+			$pdf->MultiCell($col_width, 5, $outputlangs->transnoentities("DateValidity").": ".dol_print_date($object->date_endvalidity, "day", false, $outputlangs), 0, 'L');
+			$posy += 7;
+
+			// Line 3: Status Folder + Sales Representative (if exists)
+			$pdf->SetXY($this->marge_gauche, $posy);
+			$pdf->MultiCell($col_width, 5, $outputlangs->transnoentities("StatusFolder").": ".$object->getLibStatutFolder(4, $outputlangs), 0, 'L');
+
+			if (!empty($object->fk_user_comm)) {
+				require_once DOL_DOCUMENT_ROOT.'/user/class/user.class.php';
+				$user_comm = new User($this->db);
+				$user_comm->fetch($object->fk_user_comm);
+				$pdf->SetXY($this->marge_gauche + $col_width + 5, $posy);
+				$pdf->MultiCell($col_width, 5, $outputlangs->transnoentities("SalesRepresentative").": ".dol_htmlentitiesbr($user_comm->getFullName($outputlangs)), 0, 'L');
+			}
+			$posy += 7;
+
+			// Line 4: Amount + Funding Type
+			$pdf->SetXY($this->marge_gauche, $posy);
+			$pdf->MultiCell($col_width, 5, $outputlangs->transnoentities("Amount").": ".price($object->amount, 0, $outputlangs, 1, -1, -1, $currency), 0, 'L');
+
+			$pdf->SetXY($this->marge_gauche + $col_width + 5, $posy);
+			$type_label = $object->fk_funding_type == 2 ? $outputlangs->transnoentities("Leasing") : ($object->fk_funding_type == 1 ? $outputlangs->transnoentities("Rental") : '');
+			$pdf->MultiCell($col_width, 5, $outputlangs->transnoentities("TypeFunding").": ".dol_htmlentitiesbr($type_label), 0, 'L');
+			$posy += 7;
+
+			// Line 5: Rent + Duration
+			$pdf->SetXY($this->marge_gauche, $posy);
+			$pdf->MultiCell($col_width, 5, $outputlangs->transnoentities("Rent").": ".price($object->amount_rent, 0, $outputlangs, 1, -1, -1, $currency), 0, 'L');
+
+			$duration_label = '';
+			if (!empty($object->fk_duration) && isset($object->fields['fk_duration']['arrayofkeyval'][$object->fk_duration])) {
+				$duration_label = $object->fields['fk_duration']['arrayofkeyval'][$object->fk_duration];
+			}
+			$pdf->SetXY($this->marge_gauche + $col_width + 5, $posy);
+			$pdf->MultiCell($col_width, 5, $outputlangs->transnoentities("Duration").": ".dol_htmlentitiesbr($duration_label), 0, 'L');
+			$posy += 7;
+
+			// Line 6: Total Amount + Date Delivery
+			$pdf->SetXY($this->marge_gauche, $posy);
+			$pdf->MultiCell($col_width, 5, $outputlangs->transnoentities("AmountTotal").": ".price($object->amount_total, 0, $outputlangs, 1, -1, -1, $currency), 0, 'L');
+
+			$pdf->SetXY($this->marge_gauche + $col_width + 5, $posy);
+			$pdf->MultiCell($col_width, 5, $outputlangs->transnoentities("DateDelivery").": ".dol_print_date($object->date_delivery, "day", false, $outputlangs), 0, 'L');
+			$posy += 7;
+
+			// Line 7: Coef + Redemption
+			$pdf->SetXY($this->marge_gauche, $posy);
+			$pdf->MultiCell($col_width, 5, $outputlangs->transnoentities("Coef").": ".dol_htmlentitiesbr($object->coef), 0, 'L');
+
+			$redemption_label = $object->redemption ? $outputlangs->transnoentities("Yes") : $outputlangs->transnoentities("No");
+			$pdf->SetXY($this->marge_gauche + $col_width + 5, $posy);
+			$pdf->MultiCell($col_width, 5, $outputlangs->transnoentities("Redemption").": ".dol_htmlentitiesbr($redemption_label), 0, 'L');
+			$posy += 7;
+
+			// Line 8: Retention + Date End
+			$pdf->SetXY($this->marge_gauche, $posy);
+			$retention_label = $object->retention ? $outputlangs->transnoentities("Yes") : $outputlangs->transnoentities("No");
+			$pdf->MultiCell($col_width, 5, $outputlangs->transnoentities("RetentionOfGuarantee").": ".dol_htmlentitiesbr($retention_label), 0, 'L');
+
+			$pdf->SetXY($this->marge_gauche + $col_width + 5, $posy);
+			$pdf->MultiCell($col_width, 5, $outputlangs->transnoentities("DateEnd").": ".dol_print_date($object->date_end, "day", false, $outputlangs), 0, 'L');
+			$posy += 7;
+
+			// Line 9: Maintenance Amount + Date Signature
+			if ($object->amount_maint !== null && $object->amount_maint != 0) {
+				$pdf->SetXY($this->marge_gauche, $posy);
+				$pdf->MultiCell($col_width, 5, $outputlangs->transnoentities("AmountMaint").": ".price($object->amount_maint, 0, $outputlangs, 1, -1, -1, $currency), 0, 'L');
+
+				$pdf->SetXY($this->marge_gauche + $col_width + 5, $posy);
+				$pdf->MultiCell($col_width, 5, $outputlangs->transnoentities("DateSignature").": ".dol_print_date($object->date_signature, "day", false, $outputlangs), 0, 'L');
+				$posy += 7;
+			}
+
+			// Line 10: Retention Mount
+			if ($object->retention_mount !== null && $object->retention_mount != 0) {
+				$pdf->SetXY($this->marge_gauche, $posy);
+				$pdf->MultiCell($col_width, 5, $outputlangs->transnoentities("RetentionMount").": ".price($object->retention_mount, 0, $outputlangs, 1, -1, -1, $currency), 0, 'L');
+				$posy += 7;
+			}
+
+			// Visual separator
+			$pdf->line($this->marge_gauche, $posy, $this->page_largeur - $this->marge_droite, $posy);
+			$posy += 5;
+
+			// fundoc documents
+			$has_doc = false;
+			for ($i = 1; $i <= 5; $i++) {
+				$doc_field = 'fundoc'.$i;
+				if (!empty($object->$doc_field)) {
+					if (!$has_doc) {
+						$pdf->SetFont('', 'B', $default_font_size);
+						$pdf->SetXY($this->marge_gauche, $posy);
+						$pdf->MultiCell(0, 5, $outputlangs->transnoentities("FundingDocuments"), 0, 'L');
+						$posy += 7;
+						$pdf->SetFont('', '', $default_font_size - 1);
+						$has_doc = true;
+					}
+					$pdf->SetXY($this->marge_gauche, $posy);
+					$pdf->MultiCell($col_width, 5, $outputlangs->transnoentities("fundoc".$i).": ".dol_htmlentitiesbr(basename($object->$doc_field)), 0, 'L');
+					$posy += 5;
+				}
+			}
+			$posy += 3;
+
+			// funfoldoc documents
+			$has_funfoldoc = false;
+			for ($i = 1; $i <= 5; $i++) {
+				$doc_field = 'funfoldoc'.$i;
+				if (!empty($object->$doc_field)) {
+					if (!$has_funfoldoc) {
+						$pdf->SetFont('', 'B', $default_font_size);
+						$pdf->SetXY($this->marge_gauche, $posy);
+						$pdf->MultiCell(0, 5, $outputlangs->transnoentities("FundingFolderDocuments"), 0, 'L');
+						$posy += 7;
+						$pdf->SetFont('', '', $default_font_size - 1);
+						$has_funfoldoc = true;
+					}
+					$pdf->SetXY($this->marge_gauche, $posy);
+					$pdf->MultiCell($col_width, 5, $outputlangs->transnoentities("funfoldoc".$i).": ".dol_htmlentitiesbr(basename($object->$doc_field)), 0, 'L');
+					$posy += 5;
+				}
+			}
+		} else {
+			// Fallback original
+			$pdf->SetDrawColor(128, 128, 128);
+			$this->printRect($pdf, $this->marge_gauche, $tab_top, $this->page_largeur - $this->marge_gauche - $this->marge_droite, $tab_height, $hidetop, $hidebottom);
+			$this->pdfTabTitles($pdf, $tab_top, $tab_height, $outputlangs, $hidetop);
+			if (empty($hidetop)) {
+				$pdf->line($this->marge_gauche, $tab_top + $this->tabTitleHeight, $this->page_largeur - $this->marge_droite, $tab_top + $this->tabTitleHeight);
+			}
 		}
 	}
 
@@ -926,10 +1094,10 @@ class pdf_standard_funding extends ModelePDFFunding
 		$pdf->SetFont('', 'B', $default_font_size + 3);
 		$pdf->SetXY($posx, $posy);
 		$pdf->SetTextColor(0, 0, 60);
-		$title = $outputlangs->transnoentities("funding");
+		$title = $outputlangs->transnoentities("funding").' '.$outputlangs->convToOutputCharset($object->ref);
 		if (!empty($conf->global->PDF_USE_ALSO_LANGUAGE_CODE) && is_object($outputlangsbis)) {
 			$title .= ' - ';
-			$title .= $outputlangsbis->transnoentities("PdfTitle");
+			$title .= $outputlangsbis->transnoentities("PdfTitle").' '.$outputlangs->convToOutputCharset($object->ref);
 		}
 		$pdf->MultiCell($w, 3, $title, '', 'R');
 
@@ -937,14 +1105,6 @@ class pdf_standard_funding extends ModelePDFFunding
 
 		$posy += 5;
 		$pdf->SetXY($posx, $posy);
-		$pdf->SetTextColor(0, 0, 60);
-		$textref = $outputlangs->transnoentities("Ref")." : ".$outputlangs->convToOutputCharset($object->ref);
-		/*if ($object->statut == Facture::STATUS_DRAFT)
-		{
-			$pdf->SetTextColor(128, 0, 0);
-			$textref .= ' - '.$outputlangs->transnoentities("NotValidated");
-		}*/
-		$pdf->MultiCell($w, 4, $textref, '', 'R');
 
 		$posy += 1;
 		$pdf->SetFont('', '', $default_font_size - 2);

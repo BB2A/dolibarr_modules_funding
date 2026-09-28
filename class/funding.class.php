@@ -148,7 +148,7 @@ class Funding extends CommonObject
 	 */
 	public $fields=array(
 		'rowid' => array('type'=>'integer', 'label'=>'TechnicalID', 'enabled'=>'1', 'position'=>1, 'notnull'=>1, 'visible'=>0, 'noteditable'=>'1', 'index'=>1, 'comment'=>"Id"),
-		'ref' => array('type'=>'varchar(128)', 'label'=>'Ref.', 'enabled'=>'1', 'position'=>2, 'notnull'=>1, 'visible'=>4, 'noteditable'=>'1', 'default'=>'(PROV)', 'index'=>1, 'searchall'=>1, 'showoncombobox'=>'1', 'comment'=>"Reference of object"),
+		'ref' => array('type'=>'varchar(128)', 'label'=>'Ref.', 'enabled'=>'1', 'position'=>2, 'notnull'=>1, 'visible'=>2, 'noteditable'=>'1', 'default'=>'(PROV)', 'index'=>1, 'searchall'=>1, 'showoncombobox'=>'1', 'comment'=>"Reference of object"),
 		'entity' =>array('type'=>'integer', 'label'=>'Entity', 'default'=>1, 'enabled'=>1, 'visible'=>-2, 'notnull'=>1, 'position'=>20, 'index'=>1),
 		'study_number' => array('type'=>'varchar(128)', 'label'=>'StudyNumber', 'enabled'=>'1', 'position'=>3, 'notnull'=>0, 'visible'=>2, 'index'=>1, 'searchall'=>1, 'help'=>"Help_studyNumber", 'showoncombobox'=>'1',),
 		'folder_number' => array('type'=>'varchar(128)', 'label'=>'FolderNumber', 'enabled'=>'1', 'position'=>4, 'notnull'=>0, 'visible'=>2, 'index'=>1, 'searchall'=>1, 'help'=>"Help_folderNumber", 'showoncombobox'=>'1',),
@@ -1932,11 +1932,12 @@ class Funding extends CommonObject
 	 *  @param  int     $notooltip                  1=Disable tooltip
 	 *  @param  string  $morecss                    Add more css on link
 	 *  @param  int     $save_lastsearch_value      -1=Auto, 0=No save of lastsearch_values when clicking, 1=Save lastsearch_values whenclicking
+	 *  @param  int     $addlinktonotes             Add link to notes
 	 *  @return string                              String with URL
 	 */
-	public function getNomUrl($withpicto = 0, $option = '', $notooltip = 0, $morecss = '', $save_lastsearch_value = -1)
+	public function getNomUrl($withpicto = 0, $option = '', $notooltip = 0, $morecss = '', $save_lastsearch_value = -1, $addlinktonotes = 0)
 	{
-		global $conf, $langs, $hookmanager;
+		global $conf, $langs, $user, $hookmanager;
 
 		if (!empty($conf->dol_no_mouse_hover)) {
 			$notooltip = 1; // Force disable tooltips
@@ -2019,7 +2020,25 @@ class Funding extends CommonObject
 		}
 
 		$result .= $linkend;
-		//if ($withpicto != 2) $result.=(($addlabel && $this->label) ? $sep . dol_trunc($this->label, ($addlabel > 1 ? $addlabel : 0)) : '');
+
+		if ($addlinktonotes) {
+			$txttoshow = ($user->socid > 0 ? $this->note_public : $this->note_private);
+			if ($txttoshow) {
+				$notetoshow = $langs->trans("ViewPrivateNote").':<br>'.dol_string_nohtmltag($txttoshow, 1);
+				$result .= ' <span class="note inline-block">';
+				$result .= '<a href="'.dol_buildpath('/funding/funding_card.php', 1).'?id='.$this->id.'" class="classfortooltip" title="'.dol_escape_htmltag($notetoshow).'">';
+				$result .= img_picto('', 'note');
+				$result .= '</a>';
+				$result .= '</span>';
+			}
+		}
+		$filename = dol_sanitizeFileName($this->ref);
+		$filedir = $conf->funding->multidir_output[$this->entity ? $this->entity : $conf->entity].'/'.dol_sanitizeFileName($this->ref);
+		if (is_file($filedir.'/'.$filename.'.pdf')) {
+			require_once DOL_DOCUMENT_ROOT.'/core/class/html.formfile.class.php';
+			$formfile = new FormFile($this->db);
+			$result .= $formfile->getDocumentsLink('funding', $filename, $filedir);
+		}
 
 		global $action, $hookmanager;
 		$hookmanager->initHooks(array('fundingdao'));
@@ -2388,6 +2407,8 @@ class Funding extends CommonObject
 
 			if ($this->modelpdf) {
 				$modele = $this->modelpdf;
+			} elseif (!empty($conf->global->FUNDING_FUNDING_ADDON_PDF)) {
+				$modele = $conf->global->FUNDING_FUNDING_ADDON_PDF;
 			} elseif (!empty($conf->global->FUNDING_ADDON_PDF)) {
 				$modele = $conf->global->FUNDING_ADDON_PDF;
 			}
@@ -2881,7 +2902,7 @@ class Funding extends CommonObject
 							$oldstatus = $funding->getLibStatut(1);
 							$funding->fetch($obj->rowid);
 							$output1 .= '<tr>';
-							$output1 .= '<td><a href="'.DOL_MAIN_URL_ROOT.'/custom/funding/funding_card.php?id='.$obj->rowid.'">'.$obj->ref.'</a></td>';
+							$output1 .= '<td><a href="'.dol_buildpath('/funding/funding_card.php', 1).'?id='.$obj->rowid.'">'.$obj->ref.'</a></td>';
 							$output1 .= '<td> '.date('d-m-Y', strtotime($obj->date_end)).'</td>';
 							$output1 .= '<td>'.$soc->nom.' ('.$soc->name_alias.')</td>';
 							$output1 .= '<td>'.$funding->getLibStatutFolder(1).'</td>';
@@ -2899,7 +2920,7 @@ class Funding extends CommonObject
 							if ($result >= 0) {
 								$funding->fetch($obj->rowid);
 								$output2 .= '<tr>';
-								$output2 .= '<td><a href="'.DOL_MAIN_URL_ROOT.'/custom/funding/funding_card.php?id='.$obj->rowid.'">'.$obj->ref.'</a></td>';
+								$output2 .= '<td><a href="'.dol_buildpath('/funding/funding_card.php', 1).'?id='.$obj->rowid.'">'.$obj->ref.'</a></td>';
 								$output2 .= '<td> '.date('d-m-Y', strtotime($obj->date_end)).'</td>';
 								$output2 .= '<td>'.$soc->nom.' ('.$soc->name_alias.')</td>';
 								$output2 .= '<td>'.$oldstatusfolder.'<br/>'.$funding->getLibStatutFolder(1).'</td>';
@@ -2924,7 +2945,7 @@ class Funding extends CommonObject
 				$output = '<table>';
 				$output .= '<tr style="border:1px solid black; text-color: black; text-align: center; font-weight: bold; background-color: #bed0ec87;">';
 				$output .= '<td colspan="5" style="text-color: #000;">';
-				$output .= '<a href="'.DOL_MAIN_URL_ROOT.'/custom/funding/funding_list.php?search_status='.self::STATUS_END.'">'.$subject.' '.$this->LibStatut(self::STATUS_END, 1).'</a>';
+				$output .= '<a href="'.dol_buildpath('/funding/funding_list.php', 1).'?search_status='.self::STATUS_END.'">'.$subject.' '.$this->LibStatut(self::STATUS_END, 1).'</a>';
 				$output .= '</td></tr>';
 				$output .= '<tr style="border:1px solid black; font-weight: bold; background-color: #bed0ec87;">';
 				$output .= '<th>'.$langs->transnoentitiesnoconv("Ref").'</th>';
@@ -2939,7 +2960,7 @@ class Funding extends CommonObject
 				$output = '<table>';
 				$output .= '<tr style="border:1px solid black; text-color: black; text-align: center; font-weight: bold; background-color: #bed0ec87;">';
 				$output .= '<td colspan="5" style="text-color: #000;">';
-				$output .= '<a href="'.DOL_MAIN_URL_ROOT.'/custom/funding/funding_list.php?search_statusfolder='.self::STATUS_FOLDER_EXTENSION.'">'.$subject.' '.$this->LibStatutFolder(self::STATUS_FOLDER_EXTENSION, 1).'</a>';
+				$output .= '<a href="'.dol_buildpath('/funding/funding_list.php', 1).'?search_statusfolder='.self::STATUS_FOLDER_EXTENSION.'">'.$subject.' '.$this->LibStatutFolder(self::STATUS_FOLDER_EXTENSION, 1).'</a>';
 				$output .= '</td></tr>';
 				$output .= '<tr style="border:1px solid black; font-weight: bold; background-color: #bed0ec87;">';
 				$output .= '<th>'.$langs->transnoentitiesnoconv("Ref").'</th>';
@@ -2998,7 +3019,7 @@ class Funding extends CommonObject
 		$outputinit = '<table>';
 		$outputinit .= '<tr style="border:1px solid black; text-color: black; text-align: center; font-weight: bold; background-color: #bed0ec87;">';
 		$outputinit .= '<td colspan="5" style="text-color: #000;">';
-		$outputinit .= '<a href="'.DOL_MAIN_URL_ROOT.'/custom/funding/funding_list.php?search_status='.self::STATUS_RUNNING.'">'.$subject.'</a>';
+		$outputinit .= '<a href="'.dol_buildpath('/funding/funding_list.php', 1).'?search_status='.self::STATUS_RUNNING.'">'.$subject.'</a>';
 		$outputinit .= '</td></tr>';
 		$outputinit .= '<tr style="border:1px solid black; font-weight: bold; background-color: #bed0ec87;">';
 		$outputinit.= '<th>'.$langs->transnoentitiesnoconv("Ref").'</th>';
@@ -3060,7 +3081,7 @@ class Funding extends CommonObject
 						break; // Should not happen
 					}
 					$output .= '<tr>';
-					$output .= '<td><a href="'.DOL_MAIN_URL_ROOT.'/custom/funding/funding_card.php?id='.$obj->rowid.'">'.$obj->ref.'</a></td>';
+					$output .= '<td><a href="'.dol_buildpath('/funding/funding_card.php', 1).'?id='.$obj->rowid.'">'.$obj->ref.'</a></td>';
 					$output .= '<td> '.date('d-m-Y', strtotime($obj->date_end)).'</td>';
 					$output .= '<td>'.$soc->nom.' ('.$soc->name_alias.')</td>';
 					$output .= '<td>'.$funding->getLibStatutFolder(1).'</td>';

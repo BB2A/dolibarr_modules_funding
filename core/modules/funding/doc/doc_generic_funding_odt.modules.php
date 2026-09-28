@@ -134,7 +134,7 @@ class doc_generic_funding_odt extends ModelePDFFunding
 		// List of directories area
 		$texte .= '<tr><td>';
 		$texttitle = $langs->trans("ListOfDirectories");
-		$listofdir = explode(',', preg_replace('/[\r\n]+/', ',', trim($conf->global->FUNDING_FUNDING_ADDON_PDF_ODT_PATH)));
+		$listofdir = explode(',', preg_replace('/[\r\n]+/', ',', trim(getDolGlobalString('FUNDING_FUNDING_ADDON_PDF_ODT_PATH'))));
 		$listoffiles = array();
 		foreach ($listofdir as $key=>$tmpdir) {
 			$tmpdir = trim($tmpdir);
@@ -156,7 +156,7 @@ class doc_generic_funding_odt extends ModelePDFFunding
 		$texte .= $form->textwithpicto($texttitle, $texthelp, 1, 'help', '', 1);
 		$texte .= '<div><div style="display: inline-block; min-width: 100px; vertical-align: middle;">';
 		$texte .= '<textarea class="flat" cols="60" name="value1">';
-		$texte .= $conf->global->FUNDING_FUNDING_ADDON_PDF_ODT_PATH;
+		$texte .= getDolGlobalString('FUNDING_FUNDING_ADDON_PDF_ODT_PATH');
 		$texte .= '</textarea>';
 		$texte .= '</div><div style="display: inline-block; vertical-align: middle;">';
 		$texte .= '<input type="submit" class="button" value="'.$langs->trans("Modify").'" name="Button">';
@@ -164,7 +164,7 @@ class doc_generic_funding_odt extends ModelePDFFunding
 
 		// Scan directories
 		$nbofiles = count($listoffiles);
-		if (!empty($conf->global->FUNDING_FUNDING_ADDON_PDF_ODT_PATH)) {
+		if (!empty(getDolGlobalString('FUNDING_FUNDING_ADDON_PDF_ODT_PATH'))) {
 			$texte .= $langs->trans("NumberOfModelFilesFound").': <b>';
 			//$texte.=$nbofiles?'<a id="a_'.get_class($this).'" href="#">':'';
 			$texte .= count($listoffiles);

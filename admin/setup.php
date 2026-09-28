@@ -78,8 +78,7 @@ if (!$user->admin) {
 // Parameters
 $action = GETPOST('action', 'alpha');
 $backtopage = GETPOST('backtopage', 'alpha');
-
-// $value = GETPOST('value', 'alpha');
+$value = GETPOST('value', 'alpha');
 
 isset($conf->global->FUNDING_ID_REGLEMENT) ? $conf->global->FUNDING_ID_REGLEMENT : $conf->global->FUNDING_ID_REGLEMENT = '';
 isset($conf->global->FUNDING_DEFAULT_DURATION) ? $conf->global->FUNDING_DEFAULT_DURATION : $conf->global->FUNDING_DEFAULT_DURATION = '';
@@ -196,20 +195,27 @@ if ($action == 'updateMask') {
 		dol_syslog($langs->trans("ErrorModuleNotFound"), LOG_ERR);
 	}
 } elseif ($action == 'set') { // Activate a model
+	$type = 'funding';
+	$label = 'Funding';
+	$scandir = 'funding';
 	$ret = addDocumentModel($value, $type, $label, $scandir);
 } elseif ($action == 'del') {
 	$tmpobjectkey = GETPOST('object');
+	$type = strtolower($tmpobjectkey);
 
 	$ret = delDocumentModel($value, $type);
 	if ($ret > 0) {
-		$constforval = strtoupper($tmpobjectkey).'_ADDON_PDF';
-		if ($conf->global->$constforval == "$value") {
+		$constforval = 'FUNDING_'.strtoupper($tmpobjectkey).'_ADDON_PDF';
+		if (getDolGlobalString($constforval) == "$value") {
 			dolibarr_del_const($db, $constforval, $conf->entity);
 		}
 	}
 } elseif ($action == 'setdoc') { // Set default model
 	$tmpobjectkey = GETPOST('object');
-	$constforval = strtoupper($tmpobjectkey).'_ADDON_PDF';
+	$type = strtolower($tmpobjectkey);
+	$label = ucfirst($tmpobjectkey);
+	$scandir = $tmpobjectkey;
+	$constforval = 'FUNDING_'.strtoupper($tmpobjectkey).'_ADDON_PDF';
 	if (dolibarr_set_const($db, $constforval, $value, 'chaine', 0, '', $conf->entity)) {
 		// The constant that was read before the new set
 		// We therefore requires a variable to have a coherent view
@@ -286,7 +292,7 @@ foreach ($arrayofparameters as $key => $val) {
 	} elseif ($key == 'FUNDING_FILTRE_ORGANIZATION') {
 		print '</td><td align="right" width="230">'.$form->selectarray("FUNDING_FILTRE_ORGANIZATION", $formcompany->typent_array(0), $conf->global->FUNDING_FILTRE_ORGANIZATION, 1, 0, 0, '', 0, 0, 0, (empty($conf->global->SOCIETE_SORT_ON_TYPEENT) ? 'ASC' : $conf->global->SOCIETE_SORT_ON_TYPEENT), '', 1).'</td></tr>';
 	} elseif ($key == 'FUNDING_DEFAULT_ORGANIZATION') {
-		print '</td><td align="right" width="230">'.$form->select_company($conf->global->FUNDING_DEFAULT_ORGANIZATION, 'FUNDING_DEFAULT_ORGANIZATION', $filter = '(s.fk_typent:=:'.$conf->global->FUNDING_FILTRE_ORGANIZATION.')','SelectThirdParty','','','','','','maxwidth100').'</td></tr>';
+		print '</td><td align="right" width="230">'.$form->select_company($conf->global->FUNDING_DEFAULT_ORGANIZATION, 'FUNDING_DEFAULT_ORGANIZATION', $filter = '(s.fk_typent:=:'.$conf->global->FUNDING_FILTRE_ORGANIZATION.')', 'SelectThirdParty', '', '', '', '', '', 'maxwidth100').'</td></tr>';
 	} elseif ($key == 'FUNDING_NOCLOSEDFINISHAUTO_EXTENSION') {
 		print '</td>';
 		print '<td align="right" width="230">'.$form->selectarray('FUNDING_NOCLOSEDFINISHAUTO_EXTENSION', $object->fields['fk_funding_type']['arrayofkeyval'], $conf->global->FUNDING_NOCLOSEDFINISHAUTO_EXTENSION);
@@ -317,9 +323,9 @@ foreach ($arrayofparameters as $key => $val) {
 			$arrval = array('0' => $langs->trans("No"), '1' => $langs->trans("Yes"));
 			print $form->selectarray("FUNDING_ENABLED_RENTEDIT", $arrval, $conf->global->FUNDING_ENABLED_RENTEDIT);
 		}
-	} elseif ($val["type"] == "number"){
+	} elseif ($val["type"] == "number") {
 		print '</td><td align="right" width="230"><input type="number" min='.$val["min"].' step='.$val["step"] . ' name="'.$key.'"  class="flat '.(empty($val['css']) ? 'minwidth200' : $val['css']).'" value="'.$conf->global->$key.'"></td></tr>';
-	}else {
+	} else {
 		print '</td><td align="right" width="230"><input name="'.$key.'"  class="flat '.(empty($val['css']) ? 'minwidth200' : $val['css']).'" value="'.$conf->global->$key.'"></td></tr>';
 	}
 }
@@ -334,7 +340,7 @@ print '<br>';
 
 $moduledir = 'funding';
 $myTmpObjects = array();
-$myTmpObjects['MyObject']=array('includerefgeneration'=>0, 'includedocgeneration'=>0);
+$myTmpObjects['Funding']=array('includerefgeneration'=>0, 'includedocgeneration'=>1);
 
 
 foreach ($myTmpObjects as $myTmpObjectKey => $myTmpObjectArray) {
@@ -396,7 +402,7 @@ foreach ($myTmpObjects as $myTmpObjectKey => $myTmpObjectArray) {
 								if ($conf->global->$constforvar == $file) {
 									print img_picto($langs->trans("Activated"), 'switch_on');
 								} else {
-									print '<a href="'.$_SERVER["PHP_SELF"].'?action=setmod&object='.strtolower($myTmpObjectKey).'&value='.$file.'">';
+									print '<a href="'.$_SERVER["PHP_SELF"].'?action=setmod&object='.strtolower($myTmpObjectKey).'&value='.$file.'&token='.newToken().'">';
 									print img_picto($langs->trans("Disabled"), 'switch_off');
 									print '</a>';
 								}
@@ -489,9 +495,8 @@ foreach ($myTmpObjects as $myTmpObjectKey => $myTmpObjectArray) {
 						}
 						closedir($handle);
 						arsort($filelist);
-
 						foreach ($filelist as $file) {
-							if (preg_match('/\.modules\.php$/i', $file) && preg_match('/^(pdf_|doc_)/', $file)) {
+							if (preg_match('/\.modules\.php$/i', $file) && preg_match('/^(pdf_|doc_)/', $file) && preg_match('/'.strtolower($myTmpObjectKey).'/i', $file)) {
 								if (file_exists($dir.'/'.$file)) {
 									$name = substr($file, 4, dol_strlen($file) - 16);
 									$classname = substr($file, 0, dol_strlen($file) - 12);
@@ -514,23 +519,23 @@ foreach ($myTmpObjects as $myTmpObjectKey => $myTmpObjectArray) {
 										// Active
 										if (in_array($name, $def)) {
 											print '<td class="center">'."\n";
-											print '<a href="'.$_SERVER["PHP_SELF"].'?action=del&value='.$name.'">';
+											print '<a href="'.$_SERVER["PHP_SELF"].'?action=del&object='.strtolower($myTmpObjectKey).'&value='.$name.'&token='.newToken().'">';
 											print img_picto($langs->trans("Enabled"), 'switch_on');
 											print '</a>';
 											print '</td>';
 										} else {
 											print '<td class="center">'."\n";
-											print '<a href="'.$_SERVER["PHP_SELF"].'?action=set&value='.$name.'&amp;scan_dir='.$module->scandir.'&amp;label='.urlencode($module->name).'">'.img_picto($langs->trans("Disabled"), 'switch_off').'</a>';
+											print '<a href="'.$_SERVER["PHP_SELF"].'?action=set&object='.strtolower($myTmpObjectKey).'&value='.$name.'&amp;scan_dir='.$module->scandir.'&amp;label='.urlencode($module->name).'&token='.newToken().'">'.img_picto($langs->trans("Disabled"), 'switch_off').'</a>';
 											print "</td>";
 										}
 
 										// Default
 										print '<td class="center">';
-										$constforvar = 'FUNDING_'.strtoupper($myTmpObjectKey).'_ADDON';
-										if ($conf->global->$constforvar == $name) {
+										$constforvar = 'FUNDING_'.strtoupper($myTmpObjectKey).'_ADDON_PDF';
+										if (getDolGlobalString($constforvar) == $name) {
 											print img_picto($langs->trans("Default"), 'on');
 										} else {
-											print '<a href="'.$_SERVER["PHP_SELF"].'?action=setdoc&value='.$name.'&amp;scan_dir='.$module->scandir.'&amp;label='.urlencode($module->name).'" alt="'.$langs->trans("Default").'">'.img_picto($langs->trans("Disabled"), 'off').'</a>';
+											print '<a href="'.$_SERVER["PHP_SELF"].'?action=setdoc&object='.strtolower($myTmpObjectKey).'&value='.$name.'&amp;scan_dir='.$module->scandir.'&amp;label='.urlencode($module->name).'&token='.newToken().'" alt="'.$langs->trans("Default").'">'.img_picto($langs->trans("Disabled"), 'off').'</a>';
 										}
 										print '</td>';
 

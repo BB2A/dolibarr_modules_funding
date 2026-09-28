@@ -146,7 +146,7 @@ class pdf_standard_coefficient extends ModelePDFCoefficient
 		$langs->loadLangs(array("main", "bills"));
 
 		$this->db = $db;
-		$this->name = "standard";
+		$this->name = "standard_coefificient";
 		$this->description = $langs->trans('PDFStandardDescription');
 		$this->update_main_doc_field = 1; // Save the name of generated file as the main doc when generating a doc with this template
 

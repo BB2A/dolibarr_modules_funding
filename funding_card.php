@@ -981,10 +981,15 @@ if ($object->id > 0 && $permissiontoread && (empty($action) || ($action != 'edit
 
 		// Documents
 		if ($includedocgeneration) {
+			// Ensure model_pdf is set to use configured PDF template (with fallback to standard_funding)
+			if (empty($object->model_pdf)) {
+				$object->model_pdf = (getDolGlobalString('FUNDING_FUNDING_ADDON_PDF') ? getDolGlobalString('FUNDING_FUNDING_ADDON_PDF') : (getDolGlobalString('FUNDING_ADDON_PDF') ? getDolGlobalString('FUNDING_ADDON_PDF') : 'standard_funding'));
+			}
+
 			// $upload_dir = $conf->funding->multidir_output[isset($object->entity) ? $object->entity : 1];
 			$objref = dol_sanitizeFileName($object->ref);
 			$relativepath = $objref . '/' . $objref . '.pdf';
-			$filedir = $conf->funding->multidir_output[isset($object->entity) ? $object->entity : 1].'/'. $objref.'/other';
+			$filedir = $conf->funding->multidir_output[isset($object->entity) ? $object->entity : 1].'/'. $objref;
 			$urlsource = $_SERVER["PHP_SELF"] . "?id=" . $object->id;
 			// If you can read, you can build the PDF to read content
 			$genallowed = $user->hasRight('funding', 'read');
