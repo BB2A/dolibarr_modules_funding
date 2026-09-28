@@ -2407,6 +2407,8 @@ class Funding extends CommonObject
 
 			if ($this->modelpdf) {
 				$modele = $this->modelpdf;
+			} elseif (!empty($conf->global->FUNDING_FUNDING_ADDON_PDF)) {
+				$modele = $conf->global->FUNDING_FUNDING_ADDON_PDF;
 			} elseif (!empty($conf->global->FUNDING_ADDON_PDF)) {
 				$modele = $conf->global->FUNDING_ADDON_PDF;
 			}

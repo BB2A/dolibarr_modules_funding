@@ -102,6 +102,11 @@ Checked=Pointé
 FunCheck=Pointer
 FunUnCheck=Dépointer
 NoFolderFunding=Financement introuvable
+FundingInformation=Funding Information
+FundingDocuments=Funding Documents
+FundingFolderDocuments=Funding Folder Documents
+Fundoc=Funding Document
+Funfoldoc=Folder Document
 
 
 Accepted=Accepté
@@ -351,16 +356,16 @@ FundingStatusFolderExtensionShort=Prolongation en cours
 #
 fundoc1=RIB
 fundoc2=Kbis
-fundoc3=Bilan
-fundoc4=Piéce d'identitée
-fundoc5=Acte notarié
-fundoc6=Assurance
-funfoldoc1=Acceptation
-funfoldoc2=Dossier
-funfoldoc3=Dossier signé
-funfoldoc4=Facture
-funfoldoc5=Rachat demande
-funfoldoc6=Rachat signé
+fundoc3=Balance Sheet
+fundoc4=ID Document
+fundoc5=Notarial Act
+fundoc6=Insurance
+funfoldoc1=Acceptance
+funfoldoc2=Folder
+funfoldoc3=Signed Folder
+funfoldoc4=Invoice
+funfoldoc5=Redemption Request
+funfoldoc6=Signed Redemption
 
 #
 # Trigger
