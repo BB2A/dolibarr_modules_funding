@@ -197,7 +197,7 @@ if ($action == 'updateMask') {
 } elseif ($action == 'set') { // Activate a model
 	$type = 'funding';
 	$label = 'Funding';
-	$scandir = 'funding';
+	$scandir = '';
 	$ret = addDocumentModel($value, $type, $label, $scandir);
 } elseif ($action == 'del') {
 	$tmpobjectkey = GETPOST('object');
@@ -214,7 +214,7 @@ if ($action == 'updateMask') {
 	$tmpobjectkey = GETPOST('object');
 	$type = strtolower($tmpobjectkey);
 	$label = ucfirst($tmpobjectkey);
-	$scandir = $tmpobjectkey;
+	$scandir = '';
 	$constforval = 'FUNDING_'.strtoupper($tmpobjectkey).'_ADDON_PDF';
 	if (dolibarr_set_const($db, $constforval, $value, 'chaine', 0, '', $conf->entity)) {
 		// The constant that was read before the new set
