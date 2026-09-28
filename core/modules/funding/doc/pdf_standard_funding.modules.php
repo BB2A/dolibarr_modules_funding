@@ -1001,37 +1001,44 @@ class pdf_standard_funding extends ModelePDFFunding
 			$pdf->line($this->marge_gauche, $posy, $this->page_largeur - $this->marge_droite, $posy);
 			$posy += 5;
 
-			// funfoldoc documents
+			// funfoldoc and fundoc documents in two columns side by side
+			$col_width = ($this->page_largeur - $this->marge_gauche - $this->marge_droite) / 2;
+
+			// Titles in two columns
 			$pdf->SetFont('', 'B', $default_font_size);
 			$pdf->SetXY($this->marge_gauche, $posy);
-			$pdf->MultiCell(0, 5, $outputlangs->transnoentities("FundingFolderDocuments"), 0, 'L');
+			$pdf->MultiCell($col_width, 5, $outputlangs->transnoentities("FundingFolderDocuments"), 0, 'L');
+
+			$pdf->SetXY($this->marge_gauche + $col_width, $posy);
+			$pdf->MultiCell($col_width, 5, $outputlangs->transnoentities("FundingDocuments"), 0, 'L');
 			$posy += 7;
+
 			$pdf->SetFont('', '', $default_font_size - 1);
+
+			// funfoldoc documents (left column)
+			$left_posy = $posy;
 			for ($i = 1; $i <= Funding::NB_FUNFOLDOC; $i++) {
 				$doc_field = 'funfoldoc'.$i;
 				if (!empty($object->$doc_field)) {
-					$pdf->SetXY($this->marge_gauche, $posy);
+					$pdf->SetXY($this->marge_gauche, $left_posy);
 					$pdf->MultiCell($col_width, 5, $outputlangs->transnoentities("funfoldoc".$i).": ".dol_htmlentitiesbr(basename($object->$doc_field)), 0, 'L');
-					$posy += 5;
+					$left_posy += 5;
 				}
 			}
 
-			$posy += 3;
-
-			// fundoc documents
-			$pdf->SetFont('', 'B', $default_font_size);
-			$pdf->SetXY($this->marge_gauche, $posy);
-			$pdf->MultiCell(0, 5, $outputlangs->transnoentities("FundingDocuments"), 0, 'L');
-			$posy += 7;
-			$pdf->SetFont('', '', $default_font_size - 1);
+			// fundoc documents (right column)
+			$right_posy = $posy;
 			for ($i = 1; $i <= Funding::NB_FUNDOC; $i++) {
 				$doc_field = 'fundoc'.$i;
 				if (!empty($object->$doc_field)) {
-					$pdf->SetXY($this->marge_gauche, $posy);
+					$pdf->SetXY($this->marge_gauche + $col_width, $right_posy);
 					$pdf->MultiCell($col_width, 5, $outputlangs->transnoentities("fundoc".$i).": ".dol_htmlentitiesbr(basename($object->$doc_field)), 0, 'L');
-					$posy += 5;
+					$right_posy += 5;
 				}
 			}
+
+			// Update posy to the maximum of both columns
+			$posy = max($left_posy, $right_posy);
 		} else {
 			// Fallback original
 			$pdf->SetDrawColor(128, 128, 128);
