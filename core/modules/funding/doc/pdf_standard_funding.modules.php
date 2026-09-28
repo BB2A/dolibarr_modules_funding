@@ -749,13 +749,14 @@ class pdf_standard_funding extends ModelePDFFunding
 					$pdf->SetXY($this->marge_gauche, $bottomlasttab + 5);
 					$pdf->MultiCell(0, 5, $outputlangs->transnoentities("PrivateNote"), 0, 'L');
 					$pdf->SetFont('', '', $default_font_size - 1);
-					$pdf->SetXY($this->marge_gauche, $bottomlasttab + 10);
 
 					$substitutionarray = pdf_getSubstitutionArray($outputlangs, null, $object);
 					complete_substitutions_array($substitutionarray, $outputlangs, $object);
 					$notetoprint = make_substitutions($object->note_private, $substitutionarray, $outputlangs);
 					$notetoprint = convertBackOfficeMediasLinksToPublicLinks($notetoprint);
-					$pdf->MultiCell(0, 3, dol_htmlentitiesbr($notetoprint), 0, 'L');
+					$notetoprint = dol_nl2br($notetoprint);
+
+					$pdf->writeHTMLCell(0, 3, $this->marge_gauche, $bottomlasttab + 10, $outputlangs->convToOutputCharset($notetoprint), 0, 1);
 					$bottomlasttab = $pdf->GetY();
 				}
 
