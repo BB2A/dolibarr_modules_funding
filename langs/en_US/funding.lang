@@ -54,10 +54,11 @@ MyPageName=Nom de ma page
 #
 # Others
 #
-Funding=Financement
-funding=Financement
-Fundings=Financements
-fundings=Financements
+Funding=Financing
+funding=Financing
+Fundings=Financings
+fundings=Financings
+PrivateNote=Internal note (private)
 Coefficient=Coefficient
 Coefficients=Coefficients
 coefficient=Coefficient

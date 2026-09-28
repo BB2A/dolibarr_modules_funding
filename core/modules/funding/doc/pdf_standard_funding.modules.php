@@ -743,6 +743,22 @@ class pdf_standard_funding extends ModelePDFFunding
 					$bottomlasttab = $this->page_hauteur - $heightforinfotot - $heightforfreetext - $heightforfooter + 1;
 				}
 
+				// Display private note (internal) after details and before attached files
+				if (!empty($object->note_private)) {
+					$pdf->SetFont('', 'B', $default_font_size);
+					$pdf->SetXY($this->marge_gauche, $bottomlasttab + 5);
+					$pdf->MultiCell(0, 5, $outputlangs->transnoentities("PrivateNote"), 0, 'L');
+					$pdf->SetFont('', '', $default_font_size - 1);
+					$pdf->SetXY($this->marge_gauche, $bottomlasttab + 10);
+
+					$substitutionarray = pdf_getSubstitutionArray($outputlangs, null, $object);
+					complete_substitutions_array($substitutionarray, $outputlangs, $object);
+					$notetoprint = make_substitutions($object->note_private, $substitutionarray, $outputlangs);
+					$notetoprint = convertBackOfficeMediasLinksToPublicLinks($notetoprint);
+					$pdf->MultiCell(0, 3, dol_htmlentitiesbr($notetoprint), 0, 'L');
+					$bottomlasttab = $pdf->GetY();
+				}
+
 				// Display infos area
 				//$posy = $this->drawInfoTable($pdf, $object, $bottomlasttab, $outputlangs);
 
