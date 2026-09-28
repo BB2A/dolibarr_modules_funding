@@ -978,6 +978,29 @@ class pdf_standard_funding extends ModelePDFFunding
 			// Visual separator
 			$pdf->line($this->marge_gauche, $posy, $this->page_largeur - $this->marge_droite, $posy);
 			$posy += 5;
+			// Visual separator
+			$pdf->line($this->marge_gauche, $posy, $this->page_largeur - $this->marge_droite, $posy);
+			$posy += 5;
+
+			// funfoldoc documents
+			$has_funfoldoc = false;
+			for ($i = 1; $i <= self::NB_FUNFOLDOC; $i++) {
+				$doc_field = 'funfoldoc'.$i;
+				if (!empty($object->$doc_field)) {
+					if (!$has_funfoldoc) {
+						$pdf->SetFont('', 'B', $default_font_size);
+						$pdf->SetXY($this->marge_gauche, $posy);
+						$pdf->MultiCell(0, 5, $outputlangs->transnoentities("FundingFolderDocuments"), 0, 'L');
+						$posy += 7;
+						$pdf->SetFont('', '', $default_font_size - 1);
+						$has_funfoldoc = true;
+					}
+					$pdf->SetXY($this->marge_gauche, $posy);
+					$pdf->MultiCell($col_width, 5, $outputlangs->transnoentities("funfoldoc".$i).": ".dol_htmlentitiesbr(basename($object->$doc_field)), 0, 'L');
+					$posy += 5;
+				}
+			}
+			$posy += 3;
 
 			// Display private note (internal) before funding documents
 			if (!empty($object->note_private)) {
@@ -999,7 +1022,7 @@ class pdf_standard_funding extends ModelePDFFunding
 
 			// fundoc documents
 			$has_doc = false;
-			for ($i = 1; $i <= 5; $i++) {
+			for ($i = 1; $i <= self::NB_FUNDOC; $i++) {
 				$doc_field = 'fundoc'.$i;
 				if (!empty($object->$doc_field)) {
 					if (!$has_doc) {
@@ -1012,26 +1035,6 @@ class pdf_standard_funding extends ModelePDFFunding
 					}
 					$pdf->SetXY($this->marge_gauche, $posy);
 					$pdf->MultiCell($col_width, 5, $outputlangs->transnoentities("fundoc".$i).": ".dol_htmlentitiesbr(basename($object->$doc_field)), 0, 'L');
-					$posy += 5;
-				}
-			}
-			$posy += 3;
-
-			// funfoldoc documents
-			$has_funfoldoc = false;
-			for ($i = 1; $i <= 5; $i++) {
-				$doc_field = 'funfoldoc'.$i;
-				if (!empty($object->$doc_field)) {
-					if (!$has_funfoldoc) {
-						$pdf->SetFont('', 'B', $default_font_size);
-						$pdf->SetXY($this->marge_gauche, $posy);
-						$pdf->MultiCell(0, 5, $outputlangs->transnoentities("FundingFolderDocuments"), 0, 'L');
-						$posy += 7;
-						$pdf->SetFont('', '', $default_font_size - 1);
-						$has_funfoldoc = true;
-					}
-					$pdf->SetXY($this->marge_gauche, $posy);
-					$pdf->MultiCell($col_width, 5, $outputlangs->transnoentities("funfoldoc".$i).": ".dol_htmlentitiesbr(basename($object->$doc_field)), 0, 'L');
 					$posy += 5;
 				}
 			}
