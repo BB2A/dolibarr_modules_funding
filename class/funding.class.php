@@ -3244,8 +3244,14 @@ class Funding extends CommonObject
 					$message .= $langs->transnoentities('FundingRef') . ': ' . $this->ref . '\n';
 					$message .= $langs->transnoentities('ThirdParty') . ': ' . $this->thirdparty->name . '\n';
 					$message .= $langs->transnoentities('ActionPerformed') . ': ' . $action . '\n\n';
-					$message .= $langs->transnoentities('ViewFunding') . ': ' . dol_buildpath('/funding/card.php?id=' . $this->id, 1) . '\n\n';
-					$message .= '--\n';
+					$message .= $langs->transnoentities('ViewFunding') . ': ' . dol_buildpath('/funding/card.php?id=' . $this->id, 1) . '\n';
+
+					// Add link to order if funding is linked to an order
+					if ($this->origin == 'order' && $this->origin_id > 0) {
+						$message .= $langs->transnoentities('ViewOrder') . ': ' . dol_buildpath('/commande/card.php?id=' . $this->origin_id, 1) . '\n';
+					}
+
+					$message .= '\n--\n';
 					$message .= $langs->transnoentities('EmailSentBy') . ' Dolibarr\n';
 
 					// Send email
