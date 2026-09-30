@@ -3236,7 +3236,8 @@ class Funding extends CommonObject
 				$user = new User($this->db);
 				if ($user->fetch($user_id) > 0 && !empty($user->email)) {
 					// Build email subject
-					$subject = '[Dolibarr] ' . $langs->transnoentities('FundingNotification') . ' - ' . $this->ref;
+					global $mysoc;
+					$subject = '[' . $mysoc->name . '] ' . $langs->transnoentities('FundingNotification') . ' - ' . $this->ref;
 
 					// Build email message
 					$message = $langs->transnoentities('Hello') . ' ' . $user->getFullName($langs) . ',\n\n';
