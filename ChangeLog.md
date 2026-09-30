@@ -4,9 +4,7 @@
 - PHP min 8
 - Dolibarr min 18
 
-- NEW - 28/09/2026 - Ajout de la méthode sendNotificationToUsers pour notifier les utilisateurs internes et commerciaux des changements de financement (changement de statut, ajout de documents)
-- NEW - 28/09/2026 - Les emails de notification incluent un lien vers le financement et la commande lorsqu'ils sont liés
-- NEW - 28/09/2026 - Le nom de l'application est utilisé dans le sujet de l'email au lieu de "Dolibarr" codé en dur
+- NEW - 30/09/2026 - Ajout de la méthode sendNotificationToUsers pour notifier les utilisateurs internes et commerciaux des changements de financement (changement de statut, ajout de documents)
 - NEW - 28/09/2026 - PDF : funfoldoc et fundoc affichés en deux colonnes côte à côte pour un meilleur usage de l'espace
 - NEW - 28/09/2026 - PDF : note privée affichée au-dessus de la section "Documents de financement"
 - FIX - 28/09/2026 - PDF : note privée utilise writeHTMLCell pour interpréter correctement les balises HTML
