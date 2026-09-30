@@ -3169,4 +3169,97 @@ class Funding extends CommonObject
 
 		return $result;
 	}
+
+	/**
+	 * Send notification email to internal users assigned to order and commercial users of thirdparty
+	 *
+	 * @param   string  $action           Action performed (e.g., "Status changed to X", "Document added")
+	 * @param   User    $user_modification User who made the modification
+	 * @return  int     Number of emails sent
+	 */
+	public function sendNotificationToUsers($action, User $user_modification)
+	{
+		global $conf, $langs, $db;
+
+		$sent_count = 0;
+
+		// Get list of recipients
+		$recipients = array();
+
+		// 1. Get internal users assigned to the linked order
+		if ($this->origin == 'order' && $this->origin_id > 0) {
+			require_once DOL_DOCUMENT_ROOT . '/commande/class/commande.class.php';
+			$commande = new Commande($this->db);
+			$commande->fetch($this->origin_id);
+
+			// Get users assigned to the order (sales representatives)
+			if (!empty($commande->array_options['options_fk_user_assigned'])) {
+				foreach ($commande->array_options['options_fk_user_assigned'] as $user_id) {
+					if ($user_id > 0 && $user_id != $user_modification->id) {
+						$recipients[$user_id] = 'order_assigned';
+					}
+				}
+			}
+
+			// Also get the user who created the order
+			if ($commande->fk_user_author > 0 && $commande->fk_user_author != $user_modification->id) {
+				$recipients[$commande->fk_user_author] = 'order_author';
+			}
+		}
+
+		// 2. Get commercial users of the thirdparty
+		if ($this->fk_soc > 0) {
+			require_once DOL_DOCUMENT_ROOT . '/societe/class/societe.class.php';
+			$societe = new Societe($this->db);
+			$societe->fetch($this->fk_soc);
+
+			// Get commercial users assigned to this thirdparty
+			if (!empty($societe->array_options['options_fk_user_comm'])) {
+				foreach ($societe->array_options['options_fk_user_comm'] as $user_id) {
+					if ($user_id > 0 && $user_id != $user_modification->id) {
+						$recipients[$user_id] = 'thirdparty_commercial';
+					}
+				}
+			}
+
+			// Also get the fk_user_comm from the funding itself
+			if ($this->fk_user_comm > 0 && $this->fk_user_comm != $user_modification->id) {
+				$recipients[$this->fk_user_comm] = 'funding_commercial';
+			}
+		}
+
+		// 3. Send email to each recipient
+		if (!empty($recipients)) {
+			require_once DOL_DOCUMENT_ROOT . '/user/class/user.class.php';
+
+			foreach ($recipients as $user_id => $role) {
+				$user = new User($this->db);
+				if ($user->fetch($user_id) > 0 && !empty($user->email)) {
+					// Build email subject
+					$subject = '[Dolibarr] ' . $langs->transnoentities('FundingNotification') . ' - ' . $this->ref;
+
+					// Build email message
+					$message = $langs->transnoentities('Hello') . ' ' . $user->getFullName($langs) . ',\n\n';
+					$message .= $langs->transnoentities('FundingNotificationIntro') . '\n\n';
+					$message .= $langs->transnoentities('FundingRef') . ': ' . $this->ref . '\n';
+					$message .= $langs->transnoentities('ThirdParty') . ': ' . $this->thirdparty->name . '\n';
+					$message .= $langs->transnoentities('ActionPerformed') . ': ' . $action . '\n\n';
+					$message .= $langs->transnoentities('ViewFunding') . ': ' . dol_buildpath('/funding/card.php?id=' . $this->id, 1) . '\n\n';
+					$message .= '--\n';
+					$message .= $langs->transnoentities('EmailSentBy') . ' Dolibarr\n';
+
+					// Send email
+					$from = $conf->global->MAIN_MAIL_EMAIL_FROM;
+					if (empty($from)) {
+						$from = $user_modification->email;
+					}
+
+					$this->sendMail($from, $user->email, $subject, $message);
+					$sent_count++;
+				}
+			}
+		}
+
+		return $sent_count;
+	}
 }

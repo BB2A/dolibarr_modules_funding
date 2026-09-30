@@ -440,5 +440,12 @@ FundingMessageMailMessageText = Voici tes financements qui arrive bientot à ter
 #
 # Notifications
 #
-Notify_FUNDING_VALIDATE=Financement vilidé
-Notify_FUNDING_SENTBYMAIL=Financement envoyé par mail
+Notify_FUNDING_VALIDATE=Financement validated
+Notify_FUNDING_SENTBYMAIL=Financement sent by email
+FundingNotification=Funding notification
+FundingNotificationIntro=A funding has been updated.
+FundingRef=Funding reference
+ThirdParty=Third party
+ActionPerformed=Action performed
+ViewFunding=View funding
+EmailSentBy=Email sent by
