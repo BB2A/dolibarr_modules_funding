@@ -4,13 +4,13 @@
 - PHP min 8
 - Dolibarr min 18
 
-- NEW - 28/09/2026 - Add sendNotificationToUsers method to notify internal users and commercials on funding changes (status change, document added)
-- NEW - 28/09/2026 - Notification emails include link to funding and order when linked
-- NEW - 28/09/2026 - Application name used in email subject instead of hardcoded "Dolibarr"
-- NEW - 28/09/2026 - PDF: funfoldoc and fundoc documents displayed in two columns side by side for better space usage
-- NEW - 28/09/2026 - PDF: Private note displayed above "Documents de financement" section
-- FIX - 28/09/2026 - PDF: Private note uses writeHTMLCell to properly interpret HTML tags
-- FIX - 28/09/2026 - Use Funding::NB_FUNDOC and Funding::NB_FUNFOLDOC constants instead of $object->NB_*
+- NEW - 28/09/2026 - Ajout de la méthode sendNotificationToUsers pour notifier les utilisateurs internes et commerciaux des changements de financement (changement de statut, ajout de documents)
+- NEW - 28/09/2026 - Les emails de notification incluent un lien vers le financement et la commande lorsqu'ils sont liés
+- NEW - 28/09/2026 - Le nom de l'application est utilisé dans le sujet de l'email au lieu de "Dolibarr" codé en dur
+- NEW - 28/09/2026 - PDF : funfoldoc et fundoc affichés en deux colonnes côte à côte pour un meilleur usage de l'espace
+- NEW - 28/09/2026 - PDF : note privée affichée au-dessus de la section "Documents de financement"
+- FIX - 28/09/2026 - PDF : note privée utilise writeHTMLCell pour interpréter correctement les balises HTML
+- FIX - 28/09/2026 - Utilisation des constantes Funding::NB_FUNDOC et Funding::NB_FUNFOLDOC au lieu de $object->NB_*
 
 
 ## [1.1.7] - 09/2026 Dolibarr 24
