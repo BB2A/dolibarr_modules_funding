@@ -195,6 +195,7 @@ FUNDING_LISTE_THIRDPARTY_PROPAL=Afficher les propositions de financement dans ti
 FUNDING_LISTE_THIRDPARTY_PROPAL_SHORTLIST=Afficher les propositions de financement dans la liste coût du tiers
 
 FUNDING_ENABLED_RENTEDIT=Activer le loyer personnalisé (Uniquement sur les propositions)
+FUNDING_ENABLE_USER_NOTIFICATIONS=Activer les notifications utilisateur
 
 #
 # Aides
@@ -448,6 +449,12 @@ FundingMessageMailMessageText = Voici vos financements qui arrivent bientôt à 
 #
 Notify_FUNDING_VALIDATE=Financement validé
 Notify_FUNDING_SENTBYMAIL=Financement envoyé par mail
+Notify_FUNDING_VALIDATED=Financement validé
+Notify_FUNDING_STATUSFOLDER_CHANGED=Statut dossier financement modifié
+Notify_FUNDING_SENDORG=Financement envoyé à l'organisme
+Notify_FUNDING_LACK=Financement avec pièces manquantes
+Notify_FUNDING_LACKOK=Financement pièces ok
+Notify_FUNDING_EXTENSION=Financement prolongé
 FundingNotification=Notification de financement
 FundingNotificationIntro=Un financement a été mis à jour.
 FundingRef=Référence financement

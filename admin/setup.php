@@ -125,6 +125,7 @@ $arrayofparameters = array(
 	'FUNDING_LISTE_THIRDPARTY_PROPAL_SHORTLIST'=>array('css'=>'minwidth200','enabled'=>1, 'default'=>'', 'type'=>''),
 
 	'FUNDING_ENABLED_RENTEDIT'=>array('css'=>'minwidth200','enabled'=>1, 'default'=>'', 'type'=>''),
+	'FUNDING_ENABLE_USER_NOTIFICATIONS'=>array('css'=>'minwidth200','enabled'=>1, 'default'=>'', 'type'=>''),
 
 );
 
@@ -322,6 +323,15 @@ foreach ($arrayofparameters as $key => $val) {
 		} else {
 			$arrval = array('0' => $langs->trans("No"), '1' => $langs->trans("Yes"));
 			print $form->selectarray("FUNDING_ENABLED_RENTEDIT", $arrval, $conf->global->FUNDING_ENABLED_RENTEDIT);
+		}
+	} elseif ($key == 'FUNDING_ENABLE_USER_NOTIFICATIONS') {
+		print '</td>';
+		print '<td align="right" width="230">';
+		if ($conf->use_javascript_ajax) {
+			print ajax_constantonoff('FUNDING_ENABLE_USER_NOTIFICATIONS');
+		} else {
+			$arrval = array('0' => $langs->trans("No"), '1' => $langs->trans("Yes"));
+			print $form->selectarray("FUNDING_ENABLE_USER_NOTIFICATIONS", $arrval, $conf->global->FUNDING_ENABLE_USER_NOTIFICATIONS);
 		}
 	} elseif ($val["type"] == "number") {
 		print '</td><td align="right" width="230"><input type="number" min='.$val["min"].' step='.$val["step"] . ' name="'.$key.'"  class="flat '.(empty($val['css']) ? 'minwidth200' : $val['css']).'" value="'.$conf->global->$key.'"></td></tr>';

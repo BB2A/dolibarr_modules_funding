@@ -1412,6 +1412,9 @@ class Funding extends CommonObject
 		}
 
 		if (!$error) {
+			// Send notifications to users if enabled
+			$this->sendNotificationToUsers('Notify_FUNDING_VALIDATED', $user);
+
 			$this->db->commit();
 			return 1;
 		} else {
@@ -1443,7 +1446,11 @@ class Funding extends CommonObject
 		 return -1;
 		 }*/
 
-		return $this->setStatusCommon($user, self::STATUS_DRAFT, $notrigger, 'FUNDING_UNVALIDATE');
+		$result = $this->setStatusCommon($user, self::STATUS_DRAFT, $notrigger, 'FUNDING_UNVALIDATE');
+		if ($result > 0) {
+			$this->sendNotificationToUsers('Notify_FUNDING_DRAFT', $user);
+		}
+		return $result;
 	}
 
 	/**
@@ -1463,6 +1470,7 @@ class Funding extends CommonObject
 		$result = $this->setStatusCommon($user, self::STATUS_CANCELED, $notrigger, 'FUNDING_CANCEL');
 
 		if ($result > 0) {
+			$this->sendNotificationToUsers('Notify_FUNDING_CANCELED', $user);
 			setEventMessages($langs->trans("fundingcancel"), null);
 		} else {
 			setEventMessages($langs->trans("statusfundingnok"), null, 'errors');
@@ -1514,7 +1522,12 @@ class Funding extends CommonObject
 			$this->setStatusFolder($user, 'NULL');
 		}
 
-		return $this->setStatusCommon($user, $status, $notrigger, $triger);
+		$result = $this->setStatusCommon($user, $status, $notrigger, $triger);
+		if ($result > 0) {
+			$actionLabel = ($status == self::STATUS_ACCEPT) ? 'Notify_FUNDING_ACCEPTED' : 'Notify_FUNDING_DENIED';
+			$this->sendNotificationToUsers($actionLabel, $user);
+		}
+		return $result;
 	}
 
 	/**
@@ -1903,6 +1916,14 @@ class Funding extends CommonObject
 		}
 
 		if (!$error) {
+			// Send notifications to users if enabled
+			$actionLabel = 'Notify_FUNDING_STATUSFOLDER_CHANGED';
+			if ($status == self::STATUS_FOLDER_SENDORG) $actionLabel = 'Notify_FUNDING_SENDORG';
+			elseif ($status == self::STATUS_FOLDER_LACK) $actionLabel = 'Notify_FUNDING_LACK';
+			elseif ($status == self::STATUS_FOLDER_LACKOK) $actionLabel = 'Notify_FUNDING_LACKOK';
+			elseif ($status == self::STATUS_FOLDER_EXTENSION) $actionLabel = 'Notify_FUNDING_EXTENSION';
+			$this->sendNotificationToUsers($actionLabel, $user);
+
 			$this->db->commit();
 			if (!$notrigger && empty($error)) {
 				// Call trigger
@@ -3180,6 +3201,11 @@ class Funding extends CommonObject
 	public function sendNotificationToUsers($action, User $user_modification)
 	{
 		global $conf, $langs, $db;
+
+		// Check if user notifications are enabled
+		if (empty($conf->global->FUNDING_ENABLE_USER_NOTIFICATIONS)) {
+			return 0;
+		}
 
 		$sent_count = 0;
 
