@@ -195,6 +195,7 @@ FUNDING_LISTE_THIRDPARTY_PROPAL=Afficher les propositions de financement dans ti
 FUNDING_LISTE_THIRDPARTY_PROPAL_SHORTLIST=Afficher les propositions de financement dans la liste coût du tiers
 
 FUNDING_ENABLED_RENTEDIT=Activer le loyer personnalisé (Uniquement sur les propositions)
+FUNDING_ENABLE_USER_NOTIFICATIONS=Activer les notifications utilisateur
 
 #
 # Aides
@@ -448,6 +449,21 @@ FundingMessageMailMessageText = Voici vos financements qui arrivent bientôt à 
 #
 Notify_FUNDING_VALIDATE=Financement validé
 Notify_FUNDING_SENTBYMAIL=Financement envoyé par mail
+Notify_FUNDING_VALIDATED=Financement validé
+Notify_FUNDING_DRAFT=Financement mis en brouillon
+Notify_FUNDING_CANCELED=Financement annulé
+Notify_FUNDING_ACCEPTED=Financement accepté
+Notify_FUNDING_DENIED=Financement refusé
+Notify_FUNDING_RUNNING=Financement actif
+Notify_FUNDING_END=Financement terminé
+Notify_FUNDING_STATUSFOLDER_CHANGED=Statut dossier financement modifié
+Notify_FUNDING_SENDORG=Financement envoyé à l'organisme
+Notify_FUNDING_LACK=Financement avec pièces manquantes
+Notify_FUNDING_LACKOK=Financement pièces ok
+Notify_FUNDING_EXTENSION=Financement prolongé
+Notify_FUNDING_DOCUMENT_ADDED=Document ajouté au financement
+Notify_FUNDING_DOCUMENT_DELETED=Document supprimé du financement
+Notify_FUNDING_DOCUMENT_REQUESTED=Document demandé pour le financement
 FundingNotification=Notification de financement
 FundingNotificationIntro=Un financement a été mis à jour.
 FundingRef=Référence financement
