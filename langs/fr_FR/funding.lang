@@ -195,7 +195,7 @@ FUNDING_LISTE_THIRDPARTY_PROPAL=Afficher les propositions de financement dans ti
 FUNDING_LISTE_THIRDPARTY_PROPAL_SHORTLIST=Afficher les propositions de financement dans la liste coût du tiers
 
 FUNDING_ENABLED_RENTEDIT=Activer le loyer personnalisé (Uniquement sur les propositions)
-FUNDING_ENABLE_USER_NOTIFICATIONS=Activer les notifications utilisateur
+FUNDING_ENABLE_USER_NOTIFICATIONS=Activer les notifications utilisateur (Interne)
 
 #
 # Aides
