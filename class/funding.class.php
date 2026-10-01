@@ -3300,7 +3300,6 @@ class Funding extends CommonObject
 				}
 			}
 		}
-
 		return $sent_count;
 	}
 }
