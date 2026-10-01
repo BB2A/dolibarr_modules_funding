@@ -9,6 +9,7 @@
 - NEW - 30/09/2026 - Ajout de la méthode sendNotificationToUsers pour notifier les utilisateurs internes et commerciaux des changements de financement (changement de statut, ajout de documents)
 - NEW - 28/09/2026 - PDF : funfoldoc et fundoc affichés en deux colonnes côte à côte pour un meilleur usage de l'espace
 - NEW - 28/09/2026 - PDF : note privée affichée au-dessus de la section "Documents de financement"
+- FIX - 01/10/2026 - Limite l'envoi des notifications par email aux utilisateurs internes uniquement
 - FIX - 28/09/2026 - PDF : note privée utilise writeHTMLCell pour interpréter correctement les balises HTML
 - FIX - 28/09/2026 - Utilisation des constantes Funding::NB_FUNDOC et Funding::NB_FUNFOLDOC au lieu de $object->NB_*
 

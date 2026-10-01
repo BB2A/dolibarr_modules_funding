@@ -3204,7 +3204,7 @@ class Funding extends CommonObject
 	}
 
 	/**
-	 * Send notification email to internal users assigned to order and commercial users of thirdparty
+	 * Send notification email to internal users (employees) only - assigned to order and commercial users of thirdparty
 	 *
 	 * @param   string  $action           Action performed (e.g., "Status changed to X", "Document added")
 	 * @param   User    $user_modification User who made the modification
@@ -3272,7 +3272,7 @@ class Funding extends CommonObject
 
 			foreach ($recipients as $user_id => $role) {
 				$user = new User($this->db);
-				if ($user->fetch($user_id) > 0 && !empty($user->email)) {
+				if ($user->fetch($user_id) > 0 && !empty($user->email) && $user->employee == 1) {
 					// Build email subject
 					global $mysoc;
 					$subject = getDolGlobalString('MAIN_APPLICATION_TITLE') . ' - ' . $langs->transnoentities('FundingNotification') . ' - ' . $this->ref;
