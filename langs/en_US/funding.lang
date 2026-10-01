@@ -108,7 +108,7 @@ FundingDocuments=Funding Documents
 FundingFolderDocuments=Funding Folder Documents
 Fundoc=Funding Document
 Funfoldoc=Folder Document
-
+PDFFundingDescription=Funding summary and attached documents.
 
 Accepted=Accepté
 Refused=Refusé %s

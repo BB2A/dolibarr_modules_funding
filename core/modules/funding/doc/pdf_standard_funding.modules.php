@@ -148,7 +148,7 @@ class pdf_standard_funding extends ModelePDFFunding
 
 		$this->db = $db;
 		$this->name = "Funding";
-		$this->description = $langs->trans('PDFStandardDescription');
+		$this->description = $langs->trans('PDFFundingDescription');
 		$this->update_main_doc_field = 1; // Save the name of generated file as the main doc when generating a doc with this template
 
 		// Dimension page
