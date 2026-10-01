@@ -5,6 +5,7 @@
 - Dolibarr min 18
 
 - NEW - 01/10/2026 - Ajout de l'option FUNDING_ENABLE_USER_NOTIFICATIONS dans les paramètres pour activer/désactiver les notifications utilisateur
+- NEW - 01/10/2026 - Déclenchement automatique des notifications sendNotificationToUsers lors des changements de statut (validation, brouillon, annulation, acceptation, refus, actif, terminé), des changements de statut dossier (envoyé à l'organisme, pièces manquantes, pièces OK, prolongation) et des actions sur les documents (ajout, suppression, demande)
 - NEW - 30/09/2026 - Ajout de la méthode sendNotificationToUsers pour notifier les utilisateurs internes et commerciaux des changements de financement (changement de statut, ajout de documents)
 - NEW - 28/09/2026 - PDF : funfoldoc et fundoc affichés en deux colonnes côte à côte pour un meilleur usage de l'espace
 - NEW - 28/09/2026 - PDF : note privée affichée au-dessus de la section "Documents de financement"

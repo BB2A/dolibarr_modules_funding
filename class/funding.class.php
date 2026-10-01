@@ -1549,7 +1549,11 @@ class Funding extends CommonObject
 			if (!empty($this->date_signature) && $this->status == self::STATUS_ACCEPT && $document->status > 0) {
 				$status = self::STATUS_RUNNING;
 				$triger = 'FUNDING_RUNNING';
-				return $this->setStatusCommon($user, $status, $notrigger, $triger);
+				$result = $this->setStatusCommon($user, $status, $notrigger, $triger);
+				if ($result > 0) {
+					$this->sendNotificationToUsers('Notify_FUNDING_RUNNING', $user);
+				}
+				return $result;
 			} else {
 				if ($document->status == 0) {
 					setEventMessages($langs->trans('documentnotvalidated'), '', 'errors');
@@ -1596,7 +1600,11 @@ class Funding extends CommonObject
 		$triger = 'FUNDING_END';
 		if ($statusfolder != self::STATUS_FOLDER_DENOUNCED) {
 			if ($this->status == self::STATUS_RUNNING && $result >= 0) {
-				return $this->setStatusCommon($user, $status, $notrigger, $triger);
+				$result = $this->setStatusCommon($user, $status, $notrigger, $triger);
+				if ($result > 0) {
+					$this->sendNotificationToUsers('Notify_FUNDING_END', $user);
+				}
+				return $result;
 			} else {
 				setEventMessages($langs->trans("updatenok"), 'errors');
 				return -1;
@@ -2791,6 +2799,7 @@ class Funding extends CommonObject
 					if ($allcheckcleared && $this->status_folder == $this::STATUS_FOLDER_LACK) {
 						$this->setStatusFolder($user, $this::STATUS_FOLDER_LACKOK);
 					}
+					$this->sendNotificationToUsers('Notify_FUNDING_DOCUMENT_ADDED', $user);
 					$this->message = 'FileAdded';
 					$this->messages[] = $this->message;
 				} else {
@@ -2810,9 +2819,11 @@ class Funding extends CommonObject
 				$sql = "UPDATE ".MAIN_DB_PREFIX.$this->table_element." SET ".$doc." = '' WHERE rowid = ".$this->id;
 				$resql = $db->query($sql);
 				$this->db->free($resql);
-				$this->message = 'FilesDeleted';
-				$this->messages[] = $this->message;
-				if (!$resql) {
+				if ($resql) {
+					$this->sendNotificationToUsers('Notify_FUNDING_DOCUMENT_DELETED', $user);
+					$this->message = 'FilesDeleted';
+					$this->messages[] = $this->message;
+				} else {
 					$this->error = 'ErrorFailToDeleteFile';
 					$this->errors[] = 'Error '.$this->db->lasterror();
 					$error++;
@@ -2832,6 +2843,7 @@ class Funding extends CommonObject
 			$db->free($resql);
 			if ($resql) {
 				$this->setStatusFolder($user, $this::STATUS_FOLDER_LACK);
+				$this->sendNotificationToUsers('Notify_FUNDING_DOCUMENT_REQUESTED', $user);
 				$this->message = 'FilesChecked';
 				$this->messages[] = $this->message;
 			} else {
@@ -3268,18 +3280,14 @@ class Funding extends CommonObject
 					// Build email message
 					$message = $langs->transnoentities('Hello') . ' ' . $user->getFullName($langs) . ',\n\n';
 					$message .= $langs->transnoentities('FundingNotificationIntro') . '\n\n';
-					$message .= $langs->transnoentities('FundingRef') . ': ' . $this->ref . '\n';
-					$message .= $langs->transnoentities('ThirdParty') . ': ' . $this->thirdparty->name . '\n';
+					$message .= $langs->transnoentities('FundingRef') . ': ' . $this->getNomUrl(1) . '\n';
+					$message .= $langs->transnoentities('ThirdParty') . ': ' . $this->thirdparty->getNomUrl(1) . '\n';
 					$message .= $langs->transnoentities('ActionPerformed') . ': ' . $action . '\n\n';
-					$message .= $langs->transnoentities('ViewFunding') . ': ' . dol_buildpath('/funding/card.php?id=' . $this->id, 1) . '\n';
 
 					// Add link to order if funding is linked to an order
 					if ($this->origin == 'order' && $this->origin_id > 0) {
 						$message .= $langs->transnoentities('ViewOrder') . ': ' . dol_buildpath('/commande/card.php?id=' . $this->origin_id, 1) . '\n';
 					}
-
-					$message .= '\n--\n';
-					$message .= $langs->transnoentities('EmailSentBy') . ' Dolibarr\n';
 
 					// Send email
 					$from = $conf->global->MAIN_MAIL_EMAIL_FROM;
